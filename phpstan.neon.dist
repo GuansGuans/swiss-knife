@@ -1,0 +1,387 @@
+includes:
+    - baselines/loader.neon
+#    - phpstan-baseline.neon
+
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-dangerous-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-execution-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-insecure-calls.neon
+    - vendor/spaze/phpstan-disallowed-calls/disallowed-loose-calls.neon
+#    - vendor/spaze/phpstan-disallowed-calls/extension.neon
+
+#    - vendor-bin/larastan/vendor/larastan/larastan/extension.neon
+#    - vendor/ekino/phpstan-banned-code/extension.neon
+#    - vendor/ergebnis/phpstan-rules/rules.neon
+    - vendor/canvural/larastan-strict-rules/rules.neon
+#    - vendor/larastan/vendor/larastan/larastan/extension.neon
+#    - vendor/phpstan/phpstan-strict-rules/rules.neon
+#    - vendor/roave/no-floaters/rules.neon
+#    - vendor/shipmonk/dead-code-detector/rules.neon
+#    - vendor/staabm/phpstan-todo-by/extension.neon
+
+#    - vendor/symplify/phpstan-rules/config/rector-rules.neon
+
+services:
+    # https://github.com/GuansGuans/swiss-knife/security/code-scanning
+    # https://github.com/jbelien/phpstan-sarif-formatter
+    errorFormatter.sarif:
+        class: PHPStanSarifErrorFormatter\SarifErrorFormatter
+        arguments:
+            relativePathHelper: @simpleRelativePathHelper
+            currentWorkingDirectory: %currentWorkingDirectory%
+            pretty: true
+#    errorFormatter.checkstyle:
+#        class: NickSdot\PhpStanPhpStormErrorIdentifiers\CheckstyleErrorFormatterPhpStorm
+    errorFormatter.llm:
+        class: NickSdot\PhpStanPhpStormErrorIdentifiers\LlmErrorFormatter
+
+parameters:
+    paths:
+        - app/
+        - bootstrap/app.php
+        - bootstrap/providers.php
+        - config/
+        - database/
+        - public/
+        - resources/
+        - routes/
+#        - tests/
+    scanDirectories:
+#        - vendor/rector/rector/vendor/symplify/rule-doc-generator-contracts/
+    scanFiles:
+        - vendor/composer/InstalledVersions.php
+    excludePaths:
+        - app/Support/Rector/
+        - app/Support/StreamWrapper/
+        - app/Support/ComposerScripts.php
+        - *.blade.php
+    tmpDir: .build/phpstan/
+    phpVersion: 80500
+    level: max
+    editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
+#    errorFormat: symplify
+    errorFormat: friendly
+    friendly:
+        lineBefore: 3
+        lineAfter: 3
+        editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
+    treatPhpDocTypesAsCertain: false
+    strictRules:
+        # https://github.com/phpstan/phpstan-strict-rules
+        allRules: true
+        booleansInConditions: false
+        disallowedShortTernary: false
+    ergebnis:
+        allRules: false
+    guanguans:
+        allRules: false
+        exceptionMustImplementNativeThrowable:
+            nativeThrowable: App\Contracts\Throwable
+#    sidzIgnoreNumericStrings: true
+#    sidzIgnoreMagicNumbers: [2, 3, 20, 100, 600, 512, 0o755, 1000, 3820]
+    # larastan
+    larastanStrictRules:
+        noFacade: false
+        noGlobalLaravelFunction: false
+        noValidationInController: false
+    configDirectories:
+        - config/
+    checkOctaneCompatibility: true
+    listenerPaths:
+        - app/Listeners/
+    cognitive_complexity:
+        class: 42
+        function: 8
+#        dependency_tree: 150
+#        dependency_tree_types:
+#            # only these explicit types are checked, nothing else
+#            - Rector\Contract\Rector\RectorInterface
+    symplify:
+        complexity: true
+        configurable: true
+        doctrine: true
+        naming: true
+        phpunit: true
+        static: true
+        symfony: true
+        symfonyConfig: true
+
+        ctor: true
+        mocks: true
+
+        laravelReturnType: true
+        pathStrings: true
+        symfonyReturnType: true
+    type_coverage:
+        param: 100
+        return: 100
+        constant: 100
+        property: 100
+    type_perfect:
+        narrow_param: true
+        narrow_return: true
+        null_over_false: true
+        no_mixed: false
+        no_mixed_property: true
+        no_mixed_caller: false
+        no_param_type_removal: true
+        no_isset_on_object: true
+        no_empty_on_object: true
+    unused_public:
+        constants: true
+        properties: true
+        methods: false
+        local_methods: false
+        template_paths:
+#            - resources/views/
+    disallowedFunctionCalls:
+        -
+            function: 'env_explode()'
+            message: 'use config() instead'
+        -
+            function: 'env_getcsv()'
+            message: 'use config() instead'
+        -
+            function: 'env_json_decode()'
+            message: 'use config() instead'
+    ignoreErrors:
+#        - identifier: argument.templateType
+#        - identifier: argument.type
+#        - identifier: arrayFilter.strict
+#        - identifier: assign.propertyType
+#        - identifier: binaryOp.invalid
+#        - identifier: cast.double
+#        - identifier: cast.int
+#        - identifier: cast.string
+#        - identifier: class.extendsFinalByPhpDoc
+#        - identifier: disallowed.function
+#        - identifier: empty.notAllowed
+#        - identifier: encapsedStringPart.nonString
+#        - identifier: ergebnis.final
+#        - identifier: ergebnis.finalInAbstractClass
+#        - identifier: ergebnis.noAssignByReference
+#        - identifier: ergebnis.noConstructorParameterWithDefaultValue
+#        - identifier: ergebnis.noExtends
+#        - identifier: ergebnis.noIsset
+#        - identifier: ergebnis.noNamedArgument
+#        - identifier: ergebnis.noNullableReturnTypeDeclaration
+#        - identifier: ergebnis.noParameterPassedByReference
+#        - identifier: ergebnis.noParameterWithNullableTypeDeclaration
+#        - identifier: ergebnis.noParameterWithNullDefaultValue
+#        - identifier: foreach.valueOverwrite
+#        - identifier: guanguans.forbiddenSideEffects
+#        - identifier: logicalAnd.resultUnused
+#        - identifier: logicalOr.resultUnused
+#        - identifier: method.childParameterType
+#        - identifier: method.dynamicName
+#        - identifier: missingType.generics
+#        - identifier: missingType.iterableValue
+#        - identifier: new.static
+#        - identifier: offsetAccess.nonOffsetAccessible
+#        - identifier: offsetAccess.notFound
+#        - identifier: paramOut.type
+#        - identifier: phpstanApi.class
+#        - identifier: return.type
+#        - identifier: return.void
+#        - identifier: shipmonk.binaryOperationWithNull
+#        - identifier: shipmonk.checkedExceptionInCallable
+#        - identifier: shipmonk.forbiddenCast
+#        - identifier: shipmonk.iteratorToArrayWithoutPreserveKeys
+#        - identifier: shipmonk.nonNormalizedType
+#        - identifier: shipmonk.variableTypeOverwritten
+#        - identifier: symplify.explicitInterfaceSuffixName
+#        - identifier: symplify.explicitTraitSuffixName
+#        - identifier: symplify.forbiddenArrayMethodCall
+#        - identifier: symplify.forbiddenExtendOfNonAbstractClass
+#        - identifier: symplify.forbiddenFuncCall
+#        - identifier: symplify.forbiddenNode
+#        - identifier: symplify.forbiddenStaticClassConstFetch
+#        - identifier: symplify.noArrayMapWithArrayCallable
+#        - identifier: symplify.noDynamicName
+#        - identifier: symplify.noGlobalConst
+#        - identifier: symplify.noReference
+#        - identifier: symplify.noReturnSetterMethod
+#        - identifier: symplify.requireExceptionNamespace
+#        - identifier: trait.unused
+#        - identifier: typePerfect.noMixedMethodCaller
+#        - message: '#^Unused Guanguans\\Notify\\Rector\\.*\\.*\:\:__construct$#'
+
+        - identifier: shipmonk.binaryOperationWithNull
+        - identifier: shipmonk.checkedExceptionInCallable
+        - identifier: shipmonk.deadMethod
+        - identifier: shipmonk.deadProperty.neverRead
+        - identifier: shipmonk.deadProperty.neverWritten
+        - identifier: shipmonk.forbiddenCast
+        - identifier: shipmonk.iteratorToArrayWithoutPreserveKeys
+        - identifier: shipmonk.publicPropertyNotReadonly
+        - identifier: shipmonk.unusedParameter
+        - identifier: shipmonk.variableTypeOverwritten
+        - identifier: symplify.commandHasAsCommandAttribute
+        - identifier: symplify.explicitInterfaceSuffixName
+        - identifier: symplify.explicitTraitSuffixName
+        - identifier: symplify.forbiddenFuncCall
+#        - identifier: symplify.forbiddenNode
+        - identifier: symplify.forbiddenStaticClassConstFetch
+        - identifier: symplify.forbiddenTrait
+        - identifier: symplify.noDynamicName
+        - identifier: symplify.requireAttributeName
+        - identifier: symplify.requireExceptionNamespace
+
+        - identifier: argument.type
+        - identifier: cast.double
+        - identifier: cast.int
+        - identifier: cast.string
+        - identifier: empty.notAllowed
+        - identifier: encapsedStringPart.nonString
+        - identifier: logicalAnd.resultUnused
+        - identifier: logicalOr.resultUnused
+        - identifier: method.dynamicName
+        - identifier: offsetAccess.nonOffsetAccessible
+        - identifier: property.dynamicName
+        - identifier: public.property.unused
+        - identifier: return.type
+        - identifier: staticMethod.dynamicCall
+        - identifier: staticMethod.dynamicName
+        - identifier: trait.unused
+        - message: '#^Unable to resolve the template type (TKey|TValue|TObject) in call to function (collect|classes)$#'
+        -
+            identifiers:
+                - missingType.generics
+                - missingType.iterableValue
+            path: app/Support/Facade/
+        -
+            identifiers:
+                - arguments.count
+                - booleanAnd.alwaysFalse
+                - function.impossibleType
+                - instanceof.alwaysFalse
+                - method.protected
+                - new.noConstructor
+                - property.notFound
+                - staticMethod.protected
+            path: app/Support/Mixin/
+        -
+            identifiers:
+                - larastan.noEnvCallsOutsideOfConfig
+                - nullCoalesce.variable
+            path: app/Support/helpers.php
+        -
+            identifiers:
+                - parameter.trait
+                - property.trait
+            path: app/Support/Attribute/Mixin.php
+        -
+            identifiers:
+                - class.notFound
+                - throws.notThrowable
+            path: app/Http/Controllers/Api/ChunkUploadController.php
+        -
+            message: '#^Cannot access property \$(id|Value) on mixed\.$#'
+            paths:
+                - app/Console/Commands/HealthCheckCommand.php
+                - app/Support/Mixin/RequestMixin.php
+        -
+            message: '#^Call to an undefined static method object\:\:(extendMethod|name|message)\(\)\.$#'
+            paths:
+                - app/Console/Commands/IdeHelperChoresCommand.php
+                - app/Providers/ValidatorServiceProvider.php
+        -
+            identifier: symplify.noReference
+            paths:
+                - app/Support/Signer/HmacSigner.php
+                - app/Support/helpers.php
+        -
+            identifier: symplify.forbiddenExtendOfNonAbstractClass
+            paths:
+                - app/Casts/CallbackSetCast.php
+                - app/Casts/CommaSeparatedToIntegerArrayCast.php
+                - app/Models/JWTUser.php
+        -
+            identifier: new.static
+            paths:
+                - app/Models/AbstractModel.php
+                - app/Rules/AbstractRule.php
+        -
+            identifier: property.phpDocType
+            paths:
+                - app/Providers/EventServiceProvider.php
+                - app/View/Components/AlertComponent.php
+        -
+            identifier: assign.propertyType
+            paths:
+                - app/Console/Commands/CheckServiceProviderCommand.php
+                - app/Console/Commands/HealthCheckCommand.php
+                - app/Rules/DefaultRule.php
+        -
+            identifier: method.childParameterType
+            paths:
+                - app/Rules/Concerns/DataAware.php
+        -
+            identifier: return.deprecatedInterface
+            paths:
+                - app/Http/Requests/FormRequest.php
+                - app/Rules/AbstractProxyRule.php
+                - app/Rules/MaxUploadSizeRule.php
+                - app/Support/Client/AbstractClient.php
+        -
+            identifier: complexity.classLike
+            paths:
+                - app/Support/BitEncoder.php
+                - app/Support/Signer/Utils.php
+        -
+            identifier: complexity.functionLike
+            paths:
+                - app/Providers/AutowiredServiceProvider.php
+                - app/Support/BitEncoder.php
+                - app/Support/helpers.php
+                - app/Support/Mixin/QueryBuilder/QueryBuilderMixin.php
+                - app/Support/Mixin/QueryBuilder/WhereInsQueryBuilderMixin.php
+                - app/Support/Signer/Utils.php
+        -
+            identifier: arrayFilter.strict
+            paths:
+                - config/app.php
+                - config/database.php
+        -
+            identifier: binaryOp.invalid
+            paths:
+                - app/Providers/HttpServiceProvider.php
+                - app/Support/Mixin/SchedulingEventMixin.php
+        -
+            identifier: classConstant.deprecated
+            paths:
+                - config/database.php
+        -
+            identifier: staticMethod.void
+            path: app/Http/Requests/FormRequest.php
+        -
+            identifier: shipmonk.deadEnumCase
+            paths:
+                - app/Enums/ConfigurationKey.php
+        -
+            identifier: typePerfect.noMixedPropertyFetcher
+            paths:
+                - app/Console/Commands/HealthCheckCommand.php
+                - app/Support/Mixin/RequestMixin.php
+        -
+            message: '#^Calling env_explode\(\) is forbidden, use config\(\) instead\.$#'
+            path: config/
+        -
+            message: '#^Call to method App\\Support\\Mixin\\SchedulingEventMixin\:\:dumpExpression\(\) on a separate line has no effect\.$#'
+            path: app/Support/Mixin/SchedulingEventMixin.php
+        -
+            message: '#^Null value involved in string interpolation with \$suffix$#'
+            path: app/Support/Mixin/SchedulingEventMixin.php
+
+
+
+        -
+            identifier: method.notFound
+            paths:
+                - app/Http/Controllers/Api/AuthController.php
+                - app/Models/AbstractModel.php
+                - app/Models/HttpLog.php
+#                - app/Models/JWTUser.php
+                - app/Models/User.php
+                - app/Providers/ValidatorServiceProvider.php
+                - app/Support/VarDumper/ServerDumper.php
+                - bootstrap/app.php

@@ -1,0 +1,52 @@
+{
+    "excludeFiles": [
+        ".build/**",
+        "baselines/**",
+        "config/**",
+        "node_modules/**",
+        "resources/**",
+        "routes/**",
+        "src/**",
+        "tests/**",
+        "vendor-bin/**",
+        "vendor/**",
+        "CHANGELOG.md",
+        "zhlint-*.md"
+    ],
+    "extensions": [
+        ".markdown",
+        ".md",
+        ".mdx"
+    ],
+    "rules": {
+        "space-around-alphabet": 2,
+        "space-around-number": 2,
+        "no-empty-code-lang": 2,
+        "no-empty-url": 2,
+        "no-empty-list": 2,
+        "no-empty-code": 2,
+        "no-empty-inline-code": 2,
+        "no-empty-blockquote": 2,
+        "no-special-characters": 2,
+        "use-standard-ellipsis": 2,
+        "no-full-width-number": 2,
+        "no-space-in-link": 2,
+        "no-multiple-space-blockquote": 2,
+        "correct-title-trailing-punctuation": 2,
+        "no-space-in-inline-code": 2,
+        "no-long-code": [
+            1,
+            {
+                "length": 200,
+                "exclude": [
+                    "dot",
+                    "mermaid"
+                ]
+            }
+        ],
+        "no-half-width-punctuation": 0,
+        "require-trailing-spaces": 0,
+        "space-around-link": 0,
+        "no-multiple-blank-lines": 2
+    }
+}
