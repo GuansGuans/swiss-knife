@@ -1,19 +1,18 @@
 <?php
 
-namespace Tests\Feature;
+declare(strict_types=1);
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
 
-class ExampleTest extends TestCase
-{
-    /**
-     * A basic test example.
-     */
-    public function test_the_application_returns_a_successful_response(): void
-    {
-        $response = $this->get('/');
+it('the application returns a successful response', function (): void {
+    $response = $this->get('/');
 
-        $response->assertStatus(200);
-    }
-}
+    $response->assertStatus(200);
+})->group(__DIR__, __FILE__);

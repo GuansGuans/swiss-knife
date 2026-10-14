@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
+
+namespace App\Support\Attribute;
+
+/**
+ * @see https://github.com/top-think/think-annotation
+ */
+#[\Attribute(\Attribute::TARGET_PROPERTY)]
+// #️⃣[\Attribute(\Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
+final readonly class Autowired
+{
+    /**
+     * @param array<string, mixed> $parameters
+     */
+    public function __construct(
+        public ?string $propertyType = null,
+        public array $parameters = []
+    ) {}
+}

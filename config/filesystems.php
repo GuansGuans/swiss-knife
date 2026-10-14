@@ -1,7 +1,17 @@
 <?php
 
-return [
+declare(strict_types=1);
 
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
+
+return [
     /*
     |--------------------------------------------------------------------------
     | Default Filesystem Disk
@@ -29,7 +39,6 @@ return [
     */
 
     'disks' => [
-
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
@@ -59,7 +68,6 @@ return [
             'throw' => false,
             'report' => false,
         ],
-
     ],
 
     /*
@@ -76,5 +84,4 @@ return [
     'links' => [
         public_path('storage') => storage_path('app/public'),
     ],
-
 ];

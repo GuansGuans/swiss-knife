@@ -1,0 +1,34 @@
+<?php
+
+/** @noinspection PhpUnusedAliasInspection */
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
+
+namespace App\Console\Commands;
+
+use App\Console\Commands\Concerns\Rescuer;
+use Cerbero\CommandValidator\ValidatesInput;
+use Illuminate\Console\Command;
+use Illuminate\Console\ConfirmableTrait;
+use Illuminate\Console\Prohibitable;
+use Symfony\Component\Console\Command\LockableTrait;
+
+/**
+ * @see https://github.com/PerryvanderMeer/laravel-console-validator
+ */
+abstract class AbstractCommand extends Command
+{
+    // use Prohibitable;
+    use ConfirmableTrait;
+    use LockableTrait;
+    use Rescuer;
+    use ValidatesInput;
+}

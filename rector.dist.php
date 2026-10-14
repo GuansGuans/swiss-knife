@@ -4,7 +4,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2021-2026 guanguans<ityaozm@gmail.com>
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -16,9 +16,11 @@ use App\Listeners\PrepareRequestListener;
 use App\Support\Rector\ClassHandleMethodRector;
 use App\Support\Rector\MixinStaticRector;
 use Ergebnis\Rector\Rules\Expressions\Arrays\SortAssociativeArrayByKeyRector;
+use Ergebnis\Rector\Rules\Expressions\CallLikes\RemoveNamedArgumentForSingleParameterRector;
 use Guanguans\PhpCsFixerCustomFixers\Support\Utils;
 use Guanguans\RectorRules\Rector\Array_\SortListItemOfSameScalarTypeRector;
 use Guanguans\RectorRules\Rector\File\AddNoinspectionDocblockToFileFirstStmtRector;
+use Guanguans\RectorRules\Rector\File\SortFileFirstStmtDocblockRector;
 use Guanguans\RectorRules\Rector\FunctionLike\RenameGarbageParamNameRector;
 use Guanguans\RectorRules\Rector\Name\RenameToConventionalCaseNameRector;
 use Guanguans\RectorRules\Rector\Scalar\ScalarValueToConstFetchRector;
@@ -32,25 +34,31 @@ use Rector\CodingStyle\Rector\Assign\SplitDoubleAssignRector;
 use Rector\CodingStyle\Rector\ClassLike\NewlineBetweenClassLikeStmtsRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\ClassMethod\RemoveEmptyClassMethodRector;
+use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPrivateMethodRector;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPublicMethodParameterRector;
 use Rector\DeadCode\Rector\StmtsAwareInterface\RemoveDeadInstanceOfAssertRector;
+use Rector\Naming\Rector\Assign\RenameVariableToMatchMethodCallReturnTypeRector;
 use Rector\Naming\Rector\Class_\RenamePropertyToMatchTypeRector;
 use Rector\Naming\Rector\ClassMethod\RenameParamToMatchTypeRector;
 use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
 use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
+use Rector\Privatization\Rector\Class_\FinalizeTestCaseClassRector;
 use Rector\Renaming\Rector\ClassConstFetch\RenameClassConstFetchRector;
 use Rector\Renaming\Rector\MethodCall\RenameMethodRector;
 use Rector\Transform\Rector\String_\StringToClassConstantRector;
 use Rector\Transform\ValueObject\StringToClassConstant;
+use Rector\TypeDeclaration\Rector\ArrowFunction\AddArrowFunctionReturnTypeRector;
 use Rector\ValueObject\PhpVersion;
 use RectorLaravel\Rector\ArrayDimFetch\ArrayToArrGetRector;
 use RectorLaravel\Rector\ArrayDimFetch\ServerVariableToRequestFacadeRector;
+use RectorLaravel\Rector\Class_\RemoveModelPropertyFromFactoriesRector;
 use RectorLaravel\Rector\Empty_\EmptyToBlankAndFilledFuncRector;
 use RectorLaravel\Rector\FuncCall\HelperFuncCallToFacadeClassRector;
 use RectorLaravel\Rector\FuncCall\RemoveDumpDataDeadCodeRector;
 use RectorLaravel\Rector\FuncCall\TypeHintTappableCallRector;
 use RectorLaravel\Rector\If_\ThrowIfRector;
+use RectorLaravel\Rector\MethodCall\AssertStatusToAssertMethodRector;
 use RectorLaravel\Rector\MethodCall\ValidationRuleArrayStringValueToArrayRector;
 use RectorLaravel\Rector\StaticCall\CarbonToDateFacadeRector;
 use RectorLaravel\Rector\StaticCall\DispatchToHelperFunctionsRector;
@@ -69,6 +77,19 @@ return RectorConfig::configure()
         __DIR__.'/app/Models/Pivots/PivotWithCreatorPivot.php',
     ])
     ->withSkip([
+        AddArrowFunctionReturnTypeRector::class,
+        AddNoinspectionDocblockToFileFirstStmtRector::class,
+        AssertStatusToAssertMethodRector::class,
+        FinalizeTestCaseClassRector::class,
+        RemoveEmptyClassMethodRector::class,
+        RemoveModelPropertyFromFactoriesRector::class,
+        RemoveNamedArgumentForSingleParameterRector::class,
+        RemoveUnusedPrivateMethodRector::class,
+        RenameVariableToMatchMethodCallReturnTypeRector::class,
+        SortFileFirstStmtDocblockRector::class,
+        SortListItemOfSameScalarTypeRector::class,
+        StringClassNameToClassConstantRector::class,
+
         RenameGarbageParamNameRector::class,
         RenameParamToMatchTypeRector::class,
 
@@ -106,9 +127,9 @@ return RectorConfig::configure()
         RemoveDumpDataDeadCodeRector::class => [
             __DIR__.'/app/Support/Mixin/SchedulingEventMixin.php',
         ],
-        RemoveEmptyClassMethodRector::class => [
-            __DIR__.'/app/Observers/UserObserver.php',
-        ],
+        // RemoveEmptyClassMethodRector::class => [
+        //     __DIR__.'/app/Observers/UserObserver.php',
+        // ],
         RemoveExtraParametersRector::class => [
             __DIR__.'/app/Support/Mixin/',
         ],
@@ -141,17 +162,17 @@ return RectorConfig::configure()
             __DIR__.'/database/',
             __DIR__.'/routes/',
         ],
-        SortListItemOfSameScalarTypeRector::class => [
-            __DIR__.'/app/Console/Commands/HealthCheckCommand.php',
-            __DIR__.'/app/Console/Commands/InflectorCommand.php',
-            __DIR__.'/app/Http/Middleware/VerifySignature.php',
-            __DIR__.'/app/Providers/ViewServiceProvider.php',
-            __DIR__.'/config/',
-            __DIR__.'/tests/Feature/AuthTest.php',
-        ],
-        StringClassNameToClassConstantRector::class => [
-            __DIR__.'/app/Providers/UnlessProductionAggregateServiceProvider.php',
-        ],
+        // SortListItemOfSameScalarTypeRector::class => [
+        //     __DIR__.'/app/Console/Commands/HealthCheckCommand.php',
+        //     __DIR__.'/app/Console/Commands/InflectorCommand.php',
+        //     __DIR__.'/app/Http/Middleware/VerifySignature.php',
+        //     __DIR__.'/app/Providers/ViewServiceProvider.php',
+        //     __DIR__.'/config/',
+        //     __DIR__.'/tests/Feature/AuthTest.php',
+        // ],
+        // StringClassNameToClassConstantRector::class => [
+        //     __DIR__.'/app/Providers/UnlessProductionAggregateServiceProvider.php',
+        // ],
         StringToClassConstantRector::class => [
             __DIR__.'/app/Listeners/PrepareRequestListener.php',
             __FILE__,
@@ -195,8 +216,8 @@ return RectorConfig::configure()
         SetList::ALL,
     ])
     ->withRules([
-        ClassHandleMethodRector::class,
-        MixinStaticRector::class,
+        // ClassHandleMethodRector::class,
+        // MixinStaticRector::class,
     ])
     ->withConfiguredRule(AddNoinspectionDocblockToFileFirstStmtRector::class, [
         '*/app/Support/Mixin/*' => [

@@ -1,16 +1,16 @@
 <?php
 
-namespace Tests\Unit;
+declare(strict_types=1);
 
-use PHPUnit\Framework\TestCase;
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
 
-class ExampleTest extends TestCase
-{
-    /**
-     * A basic test example.
-     */
-    public function test_that_true_is_true(): void
-    {
-        $this->assertTrue(true);
-    }
-}
+it('that true is true', function (): void {
+    expect(true)->toBeTrue();
+})->group(__DIR__, __FILE__);

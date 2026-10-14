@@ -1,10 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
+
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Database Connection Name
@@ -31,7 +41,12 @@ return [
     */
 
     'connections' => [
-
+        /**
+         * @see \NunoMaduro\LaravelOptimizeDatabase\LaravelOptimizeDatabaseServiceProvider
+         * @see \SwissDevjoy\LaravelOptimizeSqlite\LaravelOptimizeSqliteServiceProvider
+         *
+         * @noinspection PhpUndefinedNamespaceInspection
+         */
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
@@ -59,8 +74,10 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
+            'options' => \extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                // PDO::ATTR_CASE => PDO::CASE_LOWER, // @see https://www.yiichina.com/tutorial/65543
+                Mysql::ATTR_INIT_COMMAND => \sprintf("SET time_zone = '%s';", timezone_offset_name()),
             ]) : [],
         ],
 
@@ -79,8 +96,10 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
+            'options' => \extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                // PDO::ATTR_CASE => PDO::CASE_LOWER, // @see https://www.yiichina.com/tutorial/65543
+                Mysql::ATTR_INIT_COMMAND => \sprintf("SET time_zone = '%s';", timezone_offset_name()),
             ]) : [],
         ],
 
@@ -113,7 +132,6 @@ return [
             // 'encrypt' => env('DB_ENCRYPT', 'yes'),
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
-
     ],
 
     /*
@@ -144,7 +162,6 @@ return [
     */
 
     'redis' => [
-
         'client' => env('REDIS_CLIENT', 'phpredis'),
 
         'options' => [
@@ -178,7 +195,5 @@ return [
             'backoff_base' => env('REDIS_BACKOFF_BASE', 100),
             'backoff_cap' => env('REDIS_BACKOFF_CAP', 1000),
         ],
-
     ],
-
 ];

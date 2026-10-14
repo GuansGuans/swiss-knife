@@ -1,0 +1,44 @@
+<?php
+
+/** @noinspection OverrideMissingInspection */
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
+
+namespace App\Support\Mixin;
+
+use App\Support\Attribute\Mixin;
+use Illuminate\Support\Carbon;
+
+/**
+ * @mixin \Illuminate\Support\Carbon
+ */
+#[Mixin(classes: Carbon::class)]
+final class CarbonMixin
+{
+    public function inAppTimezone(): \Closure
+    {
+        return fn (): self => $this->setTimezone(config()->string('app.timezone'));
+    }
+
+    public function inUserTimezone(): \Closure
+    {
+        return function (?string $guard = null): self {
+            $timezone = request()->user($guard)?->timezone();
+
+            return null === $timezone ? $this : $this->setTimezone($timezone);
+        };
+    }
+
+    public static function toFormattedDateTimeString(): \Closure
+    {
+        return static fn (): string => self::this()->format('Y-m-d H:i:s');
+    }
+}

@@ -51,7 +51,6 @@ parameters:
         - vendor/composer/InstalledVersions.php
     excludePaths:
         - app/Support/Rector/
-        - app/Support/StreamWrapper/
         - app/Support/ComposerScripts.php
         - *.blade.php
     tmpDir: .build/phpstan/
@@ -76,8 +75,8 @@ parameters:
         allRules: false
         exceptionMustImplementNativeThrowable:
             nativeThrowable: App\Contracts\Throwable
-#    sidzIgnoreNumericStrings: true
-#    sidzIgnoreMagicNumbers: [2, 3, 20, 100, 600, 512, 0o755, 1000, 3820]
+    sidzIgnoreNumericStrings: true
+    sidzIgnoreMagicNumbers: [2, 3, 10, 14, 16, 20, 45, 90, 100, 120, 600, 512, 2525, 0o755, 1000, 3820, 10800, 11211, 300000]
     # larastan
     larastanStrictRules:
         noFacade: false
@@ -126,19 +125,9 @@ parameters:
         no_param_type_removal: true
         no_isset_on_object: true
         no_empty_on_object: true
-    unused_public:
-        constants: true
-        properties: true
-        methods: false
-        local_methods: false
-        template_paths:
-#            - resources/views/
     disallowedFunctionCalls:
         -
             function: 'env_explode()'
-            message: 'use config() instead'
-        -
-            function: 'env_getcsv()'
             message: 'use config() instead'
         -
             function: 'env_json_decode()'
@@ -208,180 +197,201 @@ parameters:
         - identifier: shipmonk.binaryOperationWithNull
         - identifier: shipmonk.checkedExceptionInCallable
         - identifier: shipmonk.deadMethod
-        - identifier: shipmonk.deadProperty.neverRead
-        - identifier: shipmonk.deadProperty.neverWritten
-        - identifier: shipmonk.forbiddenCast
-        - identifier: shipmonk.iteratorToArrayWithoutPreserveKeys
-        - identifier: shipmonk.publicPropertyNotReadonly
+#        - identifier: shipmonk.deadProperty.neverRead
+#        - identifier: shipmonk.deadProperty.neverWritten
+#        - identifier: shipmonk.forbiddenCast
+#        - identifier: shipmonk.iteratorToArrayWithoutPreserveKeys
+#        - identifier: shipmonk.publicPropertyNotReadonly
         - identifier: shipmonk.unusedParameter
-        - identifier: shipmonk.variableTypeOverwritten
-        - identifier: symplify.commandHasAsCommandAttribute
-        - identifier: symplify.explicitInterfaceSuffixName
+#        - identifier: shipmonk.variableTypeOverwritten
+#        - identifier: symplify.commandHasAsCommandAttribute
+#        - identifier: symplify.explicitInterfaceSuffixName
         - identifier: symplify.explicitTraitSuffixName
         - identifier: symplify.forbiddenFuncCall
 #        - identifier: symplify.forbiddenNode
-        - identifier: symplify.forbiddenStaticClassConstFetch
+#        - identifier: symplify.forbiddenStaticClassConstFetch
         - identifier: symplify.forbiddenTrait
-        - identifier: symplify.noDynamicName
+#        - identifier: symplify.noDynamicName
         - identifier: symplify.requireAttributeName
-        - identifier: symplify.requireExceptionNamespace
+#        - identifier: symplify.requireExceptionNamespace
 
         - identifier: argument.type
-        - identifier: cast.double
-        - identifier: cast.int
+#        - identifier: cast.double
+#        - identifier: cast.int
         - identifier: cast.string
-        - identifier: empty.notAllowed
-        - identifier: encapsedStringPart.nonString
-        - identifier: logicalAnd.resultUnused
-        - identifier: logicalOr.resultUnused
-        - identifier: method.dynamicName
+#        - identifier: empty.notAllowed
+#        - identifier: encapsedStringPart.nonString
+#        - identifier: logicalAnd.resultUnused
+#        - identifier: logicalOr.resultUnused
+#        - identifier: method.dynamicName
         - identifier: offsetAccess.nonOffsetAccessible
-        - identifier: property.dynamicName
-        - identifier: public.property.unused
+#        - identifier: property.dynamicName
+#        - identifier: public.property.unused
         - identifier: return.type
         - identifier: staticMethod.dynamicCall
-        - identifier: staticMethod.dynamicName
+#        - identifier: staticMethod.dynamicName
         - identifier: trait.unused
         - message: '#^Unable to resolve the template type (TKey|TValue|TObject) in call to function (collect|classes)$#'
-        -
-            identifiers:
-                - missingType.generics
-                - missingType.iterableValue
-            path: app/Support/Facade/
-        -
-            identifiers:
-                - arguments.count
-                - booleanAnd.alwaysFalse
-                - function.impossibleType
-                - instanceof.alwaysFalse
-                - method.protected
-                - new.noConstructor
-                - property.notFound
-                - staticMethod.protected
-            path: app/Support/Mixin/
+#        -
+#            identifiers:
+#                - missingType.generics
+#                - missingType.iterableValue
+#            path: app/Support/Facade/
+#        -
+#            identifiers:
+#                - arguments.count
+#                - booleanAnd.alwaysFalse
+#                - function.impossibleType
+#                - instanceof.alwaysFalse
+#                - method.protected
+#                - new.noConstructor
+#                - property.notFound
+#                - staticMethod.protected
+#            path: app/Support/Mixin/
         -
             identifiers:
                 - larastan.noEnvCallsOutsideOfConfig
                 - nullCoalesce.variable
             path: app/Support/helpers.php
-        -
-            identifiers:
-                - parameter.trait
-                - property.trait
-            path: app/Support/Attribute/Mixin.php
-        -
-            identifiers:
-                - class.notFound
-                - throws.notThrowable
-            path: app/Http/Controllers/Api/ChunkUploadController.php
-        -
-            message: '#^Cannot access property \$(id|Value) on mixed\.$#'
-            paths:
-                - app/Console/Commands/HealthCheckCommand.php
-                - app/Support/Mixin/RequestMixin.php
-        -
-            message: '#^Call to an undefined static method object\:\:(extendMethod|name|message)\(\)\.$#'
-            paths:
-                - app/Console/Commands/IdeHelperChoresCommand.php
-                - app/Providers/ValidatorServiceProvider.php
+#        -
+#            identifiers:
+#                - parameter.trait
+#                - property.trait
+#            path: app/Support/Attribute/Mixin.php
+#        -
+#            identifiers:
+#                - class.notFound
+#                - throws.notThrowable
+#            path: app/Http/Controllers/Api/ChunkUploadController.php
+#        -
+#            message: '#^Cannot access property \$(id|Value) on mixed\.$#'
+#            paths:
+#                - app/Console/Commands/HealthCheckCommand.php
+#                - app/Support/Mixin/RequestMixin.php
+#        -
+#            message: '#^Call to an undefined static method object\:\:(extendMethod|name|message)\(\)\.$#'
+#            paths:
+#                - app/Console/Commands/IdeHelperChoresCommand.php
+#                - app/Providers/ValidatorServiceProvider.php
         -
             identifier: symplify.noReference
             paths:
-                - app/Support/Signer/HmacSigner.php
+#                - app/Support/Signer/HmacSigner.php
                 - app/Support/helpers.php
-        -
-            identifier: symplify.forbiddenExtendOfNonAbstractClass
-            paths:
-                - app/Casts/CallbackSetCast.php
-                - app/Casts/CommaSeparatedToIntegerArrayCast.php
-                - app/Models/JWTUser.php
-        -
-            identifier: new.static
-            paths:
-                - app/Models/AbstractModel.php
-                - app/Rules/AbstractRule.php
-        -
-            identifier: property.phpDocType
-            paths:
-                - app/Providers/EventServiceProvider.php
-                - app/View/Components/AlertComponent.php
-        -
-            identifier: assign.propertyType
-            paths:
-                - app/Console/Commands/CheckServiceProviderCommand.php
-                - app/Console/Commands/HealthCheckCommand.php
-                - app/Rules/DefaultRule.php
-        -
-            identifier: method.childParameterType
-            paths:
-                - app/Rules/Concerns/DataAware.php
-        -
-            identifier: return.deprecatedInterface
-            paths:
-                - app/Http/Requests/FormRequest.php
-                - app/Rules/AbstractProxyRule.php
-                - app/Rules/MaxUploadSizeRule.php
-                - app/Support/Client/AbstractClient.php
-        -
-            identifier: complexity.classLike
-            paths:
-                - app/Support/BitEncoder.php
-                - app/Support/Signer/Utils.php
-        -
-            identifier: complexity.functionLike
-            paths:
-                - app/Providers/AutowiredServiceProvider.php
-                - app/Support/BitEncoder.php
-                - app/Support/helpers.php
-                - app/Support/Mixin/QueryBuilder/QueryBuilderMixin.php
-                - app/Support/Mixin/QueryBuilder/WhereInsQueryBuilderMixin.php
-                - app/Support/Signer/Utils.php
+#        -
+#            identifier: symplify.forbiddenExtendOfNonAbstractClass
+#            paths:
+#                - app/Casts/CallbackSetCast.php
+#                - app/Casts/CommaSeparatedToIntegerArrayCast.php
+#                - app/Models/JWTUser.php
+#        -
+#            identifier: new.static
+#            paths:
+#                - app/Models/AbstractModel.php
+#                - app/Rules/AbstractRule.php
+#        -
+#            identifier: property.phpDocType
+#            paths:
+#                - app/Providers/EventServiceProvider.php
+#                - app/View/Components/AlertComponent.php
+#        -
+#            identifier: assign.propertyType
+#            paths:
+#                - app/Console/Commands/CheckServiceProviderCommand.php
+#                - app/Console/Commands/HealthCheckCommand.php
+#                - app/Rules/DefaultRule.php
+#        -
+#            identifier: method.childParameterType
+#            paths:
+#                - app/Rules/Concerns/DataAware.php
+#        -
+#            identifier: return.deprecatedInterface
+#            paths:
+#                - app/Http/Requests/FormRequest.php
+#                - app/Rules/AbstractProxyRule.php
+#                - app/Rules/MaxUploadSizeRule.php
+#                - app/Support/Client/AbstractClient.php
+#        -
+#            identifier: complexity.classLike
+#            paths:
+#                - app/Support/BitEncoder.php
+#                - app/Support/Signer/Utils.php
+#        -
+#            identifier: complexity.functionLike
+#            paths:
+#                - app/Providers/AutowiredServiceProvider.php
+#                - app/Support/BitEncoder.php
+#                - app/Support/helpers.php
+#                - app/Support/Mixin/QueryBuilder/QueryBuilderMixin.php
+#                - app/Support/Mixin/QueryBuilder/WhereInsQueryBuilderMixin.php
+#                - app/Support/Signer/Utils.php
         -
             identifier: arrayFilter.strict
             paths:
                 - config/app.php
                 - config/database.php
-        -
-            identifier: binaryOp.invalid
-            paths:
-                - app/Providers/HttpServiceProvider.php
-                - app/Support/Mixin/SchedulingEventMixin.php
-        -
-            identifier: classConstant.deprecated
-            paths:
-                - config/database.php
-        -
-            identifier: staticMethod.void
-            path: app/Http/Requests/FormRequest.php
-        -
-            identifier: shipmonk.deadEnumCase
-            paths:
-                - app/Enums/ConfigurationKey.php
-        -
-            identifier: typePerfect.noMixedPropertyFetcher
-            paths:
-                - app/Console/Commands/HealthCheckCommand.php
-                - app/Support/Mixin/RequestMixin.php
-        -
-            message: '#^Calling env_explode\(\) is forbidden, use config\(\) instead\.$#'
-            path: config/
-        -
-            message: '#^Call to method App\\Support\\Mixin\\SchedulingEventMixin\:\:dumpExpression\(\) on a separate line has no effect\.$#'
-            path: app/Support/Mixin/SchedulingEventMixin.php
-        -
-            message: '#^Null value involved in string interpolation with \$suffix$#'
-            path: app/Support/Mixin/SchedulingEventMixin.php
+#        -
+#            identifier: binaryOp.invalid
+#            paths:
+#                - app/Providers/HttpServiceProvider.php
+#                - app/Support/Mixin/SchedulingEventMixin.php
+#        -
+#            identifier: classConstant.deprecated
+#            paths:
+#                - config/database.php
+#        -
+#            identifier: staticMethod.void
+#            path: app/Http/Requests/FormRequest.php
+#        -
+#            identifier: shipmonk.deadEnumCase
+#            paths:
+#                - app/Enums/ConfigurationKey.php
+#        -
+#            identifier: typePerfect.noMixedPropertyFetcher
+#            paths:
+#                - app/Console/Commands/HealthCheckCommand.php
+#                - app/Support/Mixin/RequestMixin.php
+#        -
+#            message: '#^Calling env_explode\(\) is forbidden, use config\(\) instead\.$#'
+#            path: config/
+#        -
+#            message: '#^Call to method App\\Support\\Mixin\\SchedulingEventMixin\:\:dumpExpression\(\) on a separate line has no effect\.$#'
+#            path: app/Support/Mixin/SchedulingEventMixin.php
+#        -
+#            message: '#^Null value involved in string interpolation with \$suffix$#'
+#            path: app/Support/Mixin/SchedulingEventMixin.php
 
 
 
-        -
-            identifier: method.notFound
-            paths:
-                - app/Http/Controllers/Api/AuthController.php
-                - app/Models/AbstractModel.php
-                - app/Models/HttpLog.php
+#        -
+#            identifier: method.notFound
+#            paths:
+#                - app/Http/Controllers/Api/AuthController.php
+#                - app/Models/AbstractModel.php
+#                - app/Models/HttpLog.php
 #                - app/Models/JWTUser.php
-                - app/Models/User.php
-                - app/Providers/ValidatorServiceProvider.php
-                - app/Support/VarDumper/ServerDumper.php
-                - bootstrap/app.php
+#                - app/Models/User.php
+#                - app/Providers/ValidatorServiceProvider.php
+#                - app/Support/VarDumper/ServerDumper.php
+#                - bootstrap/app.php
+
+
+
+        - identifier: arguments.count
+        - identifier: arrayUnpacking.nonIterable
+        - identifier: assign.propertyType
+        - identifier: complexity.functionLike
+        - identifier: function.impossibleType
+        - identifier: instanceof.alwaysFalse
+#        - identifier: method.childParameterType
+#        - identifier: method.nonObject
+        - identifier: method.notFound
+        - identifier: new.static
+        - identifier: parameter.trait
+        - identifier: property.notFound
+        - identifier: property.trait
+        - identifier: shipmonk.forbiddenCast
+#        - identifier: shipmonk.returnListNotUsed
+        - identifier: shipmonk.variableTypeOverwritten
+        - identifier: staticMethod.protected
+        - identifier: symplify.explicitAbstractPrefixName

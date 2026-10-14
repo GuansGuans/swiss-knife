@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
+
+namespace App\Listeners;
+
+use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Console\Events\ScheduledTaskStarting;
+use Illuminate\Routing\Events\RouteMatched;
+use Illuminate\Support\Facades\Context;
+
+final class ContextSubscriber
+{
+    /**
+     * @see \Symfony\Component\Console\DataCollector\CommandDataCollector
+     * @see \Symfony\Component\Console\Debug\CliRequest
+     * @see \Symfony\Component\Console\Command\TraceableCommand
+     *
+     * @return array<class-string, callable(object $event): void>
+     */
+    public function subscribe(): array
+    {
+        return [
+            RouteMatched::class => static function (RouteMatched $event): void {
+                Context::add([
+                    'action' => $event->route->getActionName(),
+                ]);
+            },
+            CommandStarting::class => static function (CommandStarting $event): void {
+                Context::add([
+                    'command' => $event->command ?? $event->input->getArguments()['command'] ?? 'default',
+                ]);
+            },
+            ScheduledTaskStarting::class => static function (ScheduledTaskStarting $event): void {
+                /** @noinspection NestedTernaryOperatorInspection */
+                Context::add([
+                    'command' => ($event->task->command ?: $event->task->description) ?: 'Closure',
+                ]);
+            },
+        ];
+    }
+}

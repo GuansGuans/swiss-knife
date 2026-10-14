@@ -1,17 +1,28 @@
 #!/usr/bin/env php
 <?php
 
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
+
 use Illuminate\Foundation\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 
-define('LARAVEL_START', microtime(true));
+\define('LARAVEL_START', microtime(true));
 
 // Register the Composer autoloader...
 require __DIR__.'/vendor/autoload.php';
 
 // Bootstrap Laravel and handle the command...
-/** @var Application $app */
 $app = require_once __DIR__.'/bootstrap/app.php';
+\assert($app instanceof Application);
 
 $status = $app->handleCommand(new ArgvInput);
 

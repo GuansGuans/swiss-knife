@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2021-2026 guanguans<ityaozm@gmail.com>
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -235,27 +235,6 @@ if (!\function_exists('env_explode')) {
 
         if (\is_string($env)) {
             return $env ? explode($delimiter, $env, $limit) : [];
-        }
-
-        return $env;
-    }
-}
-
-if (!\function_exists('env_getcsv')) {
-    /**
-     * @noinspection LaravelFunctionsInspection
-     */
-    function env_getcsv(
-        string $key,
-        mixed $default = null,
-        string $delimiter = ',',
-        string $enclosure = '"',
-        string $escape = '\\'
-    ): mixed {
-        $env = env($key, $default);
-
-        if (\is_string($env)) {
-            return $env ? str_getcsv($env, $delimiter, $enclosure, $escape) : [];
         }
 
         return $env;

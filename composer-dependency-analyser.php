@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2021-2026 guanguans<ityaozm@gmail.com>
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -27,29 +27,21 @@ return (new Configuration)
         false
     )
     ->addPathsToExclude([
-        __DIR__.'/app/Support/ComposerScripts.php',
         __DIR__.'/app/Support/Rector/',
-    ])
-    ->ignoreUnknownClasses([
-        'Pion\Laravel\ChunkUpload\Handler\ResumableJSUploadHandler',
-        'Pion\Laravel\ChunkUpload\Receiver\FileReceiver',
+        __DIR__.'/app/Support/ComposerScripts.php',
     ])
     ->ignoreErrors([ErrorType::SHADOW_DEPENDENCY])
     ->ignoreErrorsOnPackages(
         [
             'guanguans/laravel-exception-notify',
             'laravel/tinker',
-            'spiral/roadrunner-cli',
-            'spiral/roadrunner-http',
+            'chrome-php/chrome',
         ],
         [ErrorType::UNUSED_DEPENDENCY]
     )
     ->ignoreErrorsOnPaths(
         [
-            __DIR__.'/app/Providers/PackageServiceProvider.php',
-            // __DIR__.'/app/Providers/UnlessProductionAggregateServiceProvider.php',
-            __DIR__.'/app/Providers/WhenLocalAggregateServiceProvider.php',
-            __DIR__.'/app/Providers/WhenTestingAggregateServiceProvider.php',
+            __DIR__.'/app/Providers/AppServiceProvider.php',
         ],
         [ErrorType::DEV_DEPENDENCY_IN_PROD]
     );
