@@ -14,36 +14,10 @@ declare(strict_types=1);
 use Carbon\CarbonInterval;
 use Carbon\CarbonTimeZone;
 use Composer\Autoload\ClassLoader;
-use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Env;
-use Illuminate\Support\Facades\DB;
 use Symfony\Component\VarDumper\VarDumper;
-
-if (!\function_exists('catch_query_log')) {
-    /**
-     * @return \Illuminate\Support\Collection<int, array{raw_query: string, time: float}>
-     */
-    function catch_query_log(callable $callback, mixed ...$parameters): Collection
-    {
-        return new Pipeline(app())
-            ->send($callback)
-            ->through(static function (callable $callback, Closure $next): Collection {
-                DB::enableQueryLog();
-                DB::flushQueryLog();
-                $queryLog = $next($callback);
-                DB::disableQueryLog();
-
-                return $queryLog;
-            })
-            ->then(static function (callable $callback) use ($parameters): Collection {
-                $callback(...$parameters);
-
-                return collect(DB::getRawQueryLog());
-            });
-    }
-}
 
 if (!\function_exists('classes')) {
     /**
@@ -139,66 +113,6 @@ if (!\function_exists('classes')) {
                     $context = null;
                 }
             });
-    }
-}
-
-if (!\function_exists('compose')) {
-    /**
-     * 合成函数.
-     */
-    function compose(callable ...$functions): callable
-    {
-        return array_reduce(
-            $functions,
-            static fn (callable $carry, callable $function): Closure => static fn (mixed $x) => $function($carry($x)),
-            static fn (mixed $x): mixed => $x
-        );
-    }
-}
-
-if (!\function_exists('curry')) {
-    /**
-     * 柯里化函数.
-     */
-    function curry(callable $function): callable
-    {
-        $accumulator = static fn (array $arguments): Closure => static function (mixed ...$args) use ($arguments, $function) {
-            $arguments = [...$arguments, ...$args];
-            $totalArguments = new ReflectionFunction($function)->getNumberOfRequiredParameters();
-
-            if (\count($arguments) >= $totalArguments) {
-                return $function(...$arguments);
-            }
-
-            return Closure::getCurrent()($arguments);
-        };
-
-        return $accumulator([]);
-    }
-}
-
-if (!\function_exists('deference')) {
-    /**
-     * @see https://github.com/php-defer/php-defer
-     *
-     * @param null|SplStack<callable> $context
-     *
-     * @param-out SplStack<callable> $context
-     */
-    function deference(?SplStack &$context, callable $callback): void
-    {
-        /** @var SplStack<callable> $context */
-        $context ??= new class extends SplStack {
-            public function __destruct()
-            {
-                /** @var SplStack<callable> $this */
-                while ($this->count() > 0) {
-                    ($this->pop())();
-                }
-            }
-        };
-
-        $context->push($callback);
     }
 }
 
@@ -313,28 +227,6 @@ if (!\function_exists('make')) {
     }
 }
 
-if (!\function_exists('partical')) {
-    /**
-     * 偏函数.
-     */
-    function partical(callable $function, mixed ...$args): callable
-    {
-        return static fn (mixed ...$moreArgs) => $function(...$args, ...$moreArgs);
-    }
-}
-
-if (!\function_exists('pp')) {
-    /**
-     * @noinspection DebugFunctionUsageInspection
-     */
-    function pp(mixed ...$vars): void
-    {
-        foreach ($vars as $var) {
-            highlight_string(\sprintf("\n<?php\n\$var = %s;\n?>\n", var_export($var, true)));
-        }
-    }
-}
-
 if (!\function_exists('resolve_callback')) {
     /**
      * @see https://github.com/PHP-DI/Invoker/blob/master/src/CallableResolver.php
@@ -375,42 +267,10 @@ if (!\function_exists('resolve_callback')) {
     }
 }
 
-if (!\function_exists('resolve_class_from')) {
-    /**
-     * @param string $path 文件路径
-     * @param null|string $vendorPath 供应商路径
-     * @param null|string $vendorNamespace 供应商命名空间
-     */
-    function resolve_class_from(string $path, ?string $vendorPath = null, ?string $vendorNamespace = null): string
-    {
-        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-        $vendorPath = $vendorPath ? realpath($vendorPath) : app_path();
-        $vendorNamespace ??= app()->getNamespace(); // App\
-
-        return str(realpath($path))
-            ->replaceFirst($vendorPath, $vendorNamespace)
-            ->beforeLast('.php')
-            ->replace(\DIRECTORY_SEPARATOR, '\\')
-            ->replace('\\\\', '\\')
-            ->start('\\')
-            ->toString();
-    }
-}
-
 if (!\function_exists('running_in_octane')) {
     function running_in_octane(): bool
     {
         return isset($_SERVER['LARAVEL_OCTANE']) || Env::get('OCTANE_DATABASE_SESSION_TTL');
-    }
-}
-
-if (!\function_exists('str_random')) {
-    /**
-     * @throws \Random\RandomException
-     */
-    function str_random(int $length = 16): string
-    {
-        return substr(bin2hex(random_bytes((int) ceil($length / 2))), 0, $length);
     }
 }
 

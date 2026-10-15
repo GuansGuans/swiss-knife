@@ -36,6 +36,11 @@ return (new Configuration)
             'guanguans/laravel-exception-notify',
             'laravel/tinker',
             'chrome-php/chrome',
+            'opcodesio/log-viewer',
+            'spatie/laravel-activitylog',
+            // 'spatie/laravel-schemaless-attributes',
+            'spatie/laravel-backup',
+            'swiss-devjoy/laravel-optimize-sqlite',
         ],
         [ErrorType::UNUSED_DEPENDENCY]
     )

@@ -273,11 +273,11 @@ parameters:
 #            paths:
 #                - app/Console/Commands/IdeHelperChoresCommand.php
 #                - app/Providers/ValidatorServiceProvider.php
-        -
-            identifier: symplify.noReference
-            paths:
+#        -
+#            identifier: symplify.noReference
+#            paths:
 #                - app/Support/Signer/HmacSigner.php
-                - app/Support/helpers.php
+#                - app/Support/helpers.php
 #        -
 #            identifier: symplify.forbiddenExtendOfNonAbstractClass
 #            paths:
@@ -384,7 +384,7 @@ parameters:
         - identifier: function.impossibleType
         - identifier: instanceof.alwaysFalse
 #        - identifier: method.childParameterType
-#        - identifier: method.nonObject
+        - identifier: method.nonObject
         - identifier: method.notFound
         - identifier: new.static
         - identifier: parameter.trait
@@ -395,3 +395,5 @@ parameters:
         - identifier: shipmonk.variableTypeOverwritten
         - identifier: staticMethod.protected
         - identifier: symplify.explicitAbstractPrefixName
+        - identifier: missingType.generics
+        - identifier: arrayFilter.strict

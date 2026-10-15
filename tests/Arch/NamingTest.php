@@ -18,66 +18,10 @@ declare(strict_types=1);
  * @see https://github.com/GuansGuans/swiss-knife
  */
 
-use App\Console\Commands\AbstractCommand;
-use App\Listeners\ContextSubscriber;
-use App\Models\AbstractModel;
-use App\Support\ComposerScripts;
 use Illuminate\Foundation\Console\RouteListCommand;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
-
-arch()
-    ->group(__DIR__, __FILE__)
-    ->skip()
-    ->preset()->php()->ignoring([]);
-
-arch()
-    ->group(__DIR__, __FILE__)
-    ->skip()
-    ->preset()->laravel()->ignoring([
-        AbstractCommand::class,
-        AbstractModel::class,
-        ComposerScripts::class,
-        ContextSubscriber::class,
-    ]);
-
-arch()
-    ->group(__DIR__, __FILE__)
-    ->skip()
-    ->preset()->security()->ignoring([
-        'assert',
-        'exec',
-    ]);
-
-arch()
-    ->group(__DIR__, __FILE__)
-    ->skip()
-    ->preset()->strict()->ignoring([]);
-
-arch()
-    ->group(__DIR__, __FILE__)
-    ->skip()
-    ->preset()->relaxed()->ignoring([]);
-
-arch('will not use debugging functions')
-    ->group(__DIR__, __FILE__)
-    // ->throwsNoExceptions()
-    ->skip()
-    ->expect([
-        // 'dd',
-        'env',
-        'env_explode',
-        'env_getcsv',
-        'exit',
-        'printf',
-        'vprintf',
-    ])
-    // ->each
-    ->not->toBeUsed()
-    ->ignoring([
-        ComposerScripts::class,
-    ]);
 
 it('is command naming', function (): void {
     collect(Artisan::all())

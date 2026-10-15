@@ -28,8 +28,6 @@ extend-ignore-words-re = [
 "Symplify" = "Symplify"
 "reguard" = "reguard"
 "responsable" = "responsable"
-"wheres" = "wheres"
-"partical" = "partical"
 
 [default.extend-identifiers]
 # "Symplify" = "Symplify"

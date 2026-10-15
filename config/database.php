@@ -41,12 +41,6 @@ return [
     */
 
     'connections' => [
-        /**
-         * @see \NunoMaduro\LaravelOptimizeDatabase\LaravelOptimizeDatabaseServiceProvider
-         * @see \SwissDevjoy\LaravelOptimizeSqlite\LaravelOptimizeSqliteServiceProvider
-         *
-         * @noinspection PhpUndefinedNamespaceInspection
-         */
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
@@ -76,8 +70,6 @@ return [
             'engine' => null,
             'options' => \extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-                // PDO::ATTR_CASE => PDO::CASE_LOWER, // @see https://www.yiichina.com/tutorial/65543
-                Mysql::ATTR_INIT_COMMAND => \sprintf("SET time_zone = '%s';", timezone_offset_name()),
             ]) : [],
         ],
 
@@ -98,8 +90,6 @@ return [
             'engine' => null,
             'options' => \extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-                // PDO::ATTR_CASE => PDO::CASE_LOWER, // @see https://www.yiichina.com/tutorial/65543
-                Mysql::ATTR_INIT_COMMAND => \sprintf("SET time_zone = '%s';", timezone_offset_name()),
             ]) : [],
         ],
 

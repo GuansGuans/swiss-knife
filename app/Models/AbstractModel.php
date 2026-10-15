@@ -15,6 +15,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\HasSchemalessAttributes;
+use App\Models\Concerns\SerializeDate;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -26,11 +27,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 abstract class AbstractModel extends Model
 {
+    // use Eloquence\Behaviours\HasCamelCasing;
     // use Watson\Validating\ValidatingTrait;
-    // use HasSchemalessAttributes;
     /** @use HasFactory<\Illuminate\Database\Eloquent\Factories\Factory<self>> */
     use HasFactory;
 
+    use HasSchemalessAttributes;
+    use SerializeDate;
     use SoftDeletes;
 
     /**

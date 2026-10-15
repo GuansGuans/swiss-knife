@@ -1,0 +1,37 @@
+<?php
+
+/** @noinspection PhpUnusedAliasInspection */
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
+
+namespace App\Models\Concerns;
+
+use Illuminate\Support\Carbon;
+
+/**
+ * @mixin \Illuminate\Database\Eloquent\Model
+ */
+trait SerializeDate
+{
+    /**
+     * 为数组 / JSON 序列化准备日期。(Laravel 7).
+     *
+     * @noinspection PhpPossiblePolymorphicInvocationInspection
+     */
+    #[\Override]
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        // return $date->format($this->dateFormat ?: Carbon::DEFAULT_TO_STRING_FORMAT);
+        // return $date->format('Y-m-d H:i:s.vP');
+        // return $date->format('Y-m-d H:i:sP');
+        return $date->inAppTimezone()->format($this->getDateFormat());
+    }
+}

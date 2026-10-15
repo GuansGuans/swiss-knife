@@ -158,6 +158,7 @@ return RectorConfig::configure()
         ],
         SortAssociativeArrayByKeyRector::class => [
             __DIR__.'/app/',
+            __DIR__.'/bootstrap/app.php',
             __DIR__.'/config/',
             __DIR__.'/database/',
             __DIR__.'/routes/',
@@ -231,6 +232,10 @@ return RectorConfig::configure()
             'PhpUnhandledExceptionInspection',
             'PhpVoidFunctionResultUsedInspection',
             'StaticClosureCanBeUsedInspection',
+        ],
+        '*/tests/Arch/*' => [
+            'ClassConstantCanBeUsedInspection',
+            'ClassnameLiteralInspection',
         ],
     ])
     ->withConfiguredRule(RenameToConventionalCaseNameRector::class, [

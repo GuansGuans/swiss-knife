@@ -42,12 +42,11 @@
   <source>
     <include>
       <directory>app/</directory>
-      <directory>bootstrap/</directory>
+      <file>bootstrap/app.php</file>
     </include>
     <exclude>
-      <directory>bootstrap/cache/</directory>
-      <directory>src/Support/Rectors/</directory>
-      <file>src/Support/ComposerScripts.php</file>
+      <directory>app/Support/Rector/</directory>
+      <file>app/Support/ComposerScripts.php</file>
     </exclude>
   </source>
 </phpunit>

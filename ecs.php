@@ -23,7 +23,6 @@ return ECSConfig::configure()
     ->withPaths(Utils::defaultPaths())
     ->withSkip([
         // StaticLambdaFixer::class => [
-        //     __DIR__.'/src/ReleaseWorker/RunComposerScriptsReleaseWorker.php',
         //     __DIR__.'/tests/*Test.php',
         //     __DIR__.'/tests/Pest.php',
         // ],

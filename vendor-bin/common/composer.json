@@ -1,0 +1,20 @@
+{
+    "require": {
+        "php": ">=8.5",
+        "ergebnis/composer-normalize": "^2.54",
+        "symplify/rule-doc-generator": "^12.2"
+    },
+    "suggest": {
+        "foo/bar": "php > 8.5"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true,
+            "theofidry/composer-inheritance-plugin": false,
+            "wikimedia/composer-merge-plugin": false
+        },
+        "sort-packages": true
+    }
+}
