@@ -392,7 +392,7 @@
         "neon-lint": "@php vendor/bin/neon-lint *.neon",
         "pest": [
             "@putenv:xdebug-on",
-            "@php vendor/bin/pest --colors=always --min=30 --coverage --profile --retry",
+            "@php vendor/bin/pest --colors=always --min=50 --coverage --profile --retry",
             "@putenv:xdebug-off"
         ],
         "pest:bail": "@pest --bail",
@@ -406,7 +406,7 @@
         "pest:highest": [
             "@putenv:php",
             "@putenv:xdebug-on",
-            "$PHP85 vendor/bin/pest --colors=always --min=30 --coverage --profile",
+            "$PHP85 vendor/bin/pest --colors=always --min=50 --coverage --profile",
             "@putenv:xdebug-off"
         ],
         "pest:migrate-configuration": "@pest --migrate-configuration",

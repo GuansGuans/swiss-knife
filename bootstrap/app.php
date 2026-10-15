@@ -15,28 +15,47 @@ use App\Listeners\ContextSubscriber;
 use App\Support\Attribute\Autowired;
 use App\Support\Attribute\Mixin;
 use App\Support\VarDumper\ServerDumper;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Carbon\CarbonInterval;
-use Composer\XdebugHandler\XdebugHandler;
 use Guanguans\LaravelSoar\SoarServiceProvider;
-use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Database\Connection;
+use Illuminate\Database\Eloquent\Casts\Json;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Events\ConnectionEstablished;
+use Illuminate\Database\Events\DatabaseBusy;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Database\Events\StatementPrepared;
+use Illuminate\Database\SQLiteConnection;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
+use Illuminate\Queue\Events\Looping;
+use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\ParallelTesting;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Lottery;
+use Illuminate\Support\Number;
+use Illuminate\Support\Str;
 use Pdo\Mysql;
-use Symfony\Component\Console\Command\Command as SymfonyCommand;
-use Symfony\Component\Console\Input\InputOption;
+
+\defined('TRACE_ID') or \define('TRACE_ID', (string) Str::uuid7());
 
 return Application::configure(basePath: \dirname(__DIR__))
-    ->registered(function (): void {
+    ->registered(static function (): void {
         classes(
             static fn (string $class, string $file): bool => str($class)->is('App\\Support\\Mixin\\*')
                 && str($file)->is('*/../../app/Support/Mixin/*')
@@ -54,7 +73,7 @@ return Application::configure(basePath: \dirname(__DIR__))
                 }
             });
     })
-    ->registered(function (Application $app): void {
+    ->registered(static function (Application $app): void {
         if ($app->isLocal()) {
             $app->register(SoarServiceProvider::class);
         }
@@ -83,6 +102,12 @@ return Application::configure(basePath: \dirname(__DIR__))
                 $app->register($provider);
             }
         }
+    })
+    ->booting(static function (Application $app): void {
+        /**
+         * @see https://masteringlaravel.io/daily/2024-11-13-how-can-you-make-sure-the-environment-is-configured-correctly
+         */
+        Env::getOrFail('APP_NAME');
     })
     ->booting(static function (): void {
         config([
@@ -128,12 +153,122 @@ return Application::configure(basePath: \dirname(__DIR__))
         ]);
     })
     ->booting(static function (): void {
-        Artisan::whenCommandLifecycleIsLongerThan(
-            CarbonInterval::seconds(3),
-            static function (): void {}
-        );
+        /**
+         * @see https://github.com/laravel/octane/issues/990
+         * @see https://medium.com/@raymondlor/migrating-to-laravel-octane-almost-cost-me-a-client-forever-59b0162e74e2
+         * @see https://learnku.com/laravel/t/89636
+         */
+        Queue::looping(static function (Looping $looping): void {
+            while (DB::transactionLevel() > 0) {
+                DB::rollBack();
+                Log::error('Transaction have not been committed or rolled back.', (array) $looping);
+            }
+        });
+
+        Artisan::whenCommandLifecycleIsLongerThan(CarbonInterval::seconds(3), static function (): void {});
         Event::subscribe(ContextSubscriber::class);
+        Route::pattern('id', '[0-9]+');
+        Route::patterns(['id' => '[0-9]+']);
         ServerDumper::register();
+    })
+    ->booting(static function (): void {
+        config(['session.secure' => true]);
+        request()->server->set('HTTPS', 'on');
+        request()->server->set('SERVER_PORT', 443);
+        URL::forceHttps();
+    })
+    ->booting(static function (Application $app): void {
+        /**
+         * @see \Carbon\Laravel\ServiceProvider
+         * @see https://dyrynda.com.au/blog/laravel-immutable-dates
+         */
+        Date::use(CarbonImmutable::class);
+        Date::useCallable(
+            static fn (mixed $result): mixed => $result instanceof CarbonInterface
+                ? $result->setTimezone(Config::string('app.timezone'))
+                : $result
+        );
+
+        /**
+         * @see https://www.php.net/manual/zh/numberformatter.parsecurrency.php
+         * @see https://zh.wikipedia.org/wiki/ISO_4217
+         */
+        Number::useCurrency('CNY');
+        Date::setLocale($app->getLocale());
+        Number::useLocale($app->getLocale());
+    })
+    ->booting(static function (Application $app): void {
+        if (!$app->runningUnitTests()) {
+            return;
+        }
+
+        CarbonImmutable::setTestNow();
+        CarbonImmutable::setTestNowAndTimezone();
+        Date::setTestNow();
+        Date::setTestNowAndTimezone();
+        Http::preventStrayRequests();
+        Mail::alwaysTo('example@example.com');
+        Mail::fake();
+        Queue::fake();
+        ParallelTesting::setUpTestDatabase(static function (): void {
+            Artisan::call('db:seed');
+        });
+    })
+    ->booting(static function (Application $app): void {
+        Event::listen(StatementPrepared::class, static function (StatementPrepared $event): void {
+            $event->statement->setFetchMode(PDO::FETCH_ASSOC);
+        });
+
+        Event::listen(ConnectionEstablished::class, static function (ConnectionEstablished $event): void {
+            if ($event->connection instanceof SQLiteConnection) {
+                // Enable on delete cascade for sqlite connections.
+                DB::statement(DB::raw('PRAGMA foreign_keys = ON')->getValue(DB::getQueryGrammar()));
+            }
+        });
+
+        Json::encodeUsing(static fn (mixed $value): string => json_encode(
+            $value,
+            // \JSON_INVALID_UTF8_IGNORE |
+            \JSON_INVALID_UTF8_SUBSTITUTE |
+            // \JSON_PARTIAL_OUTPUT_ON_ERROR |
+            \JSON_PRESERVE_ZERO_FRACTION |
+            // \JSON_PRETTY_PRINT |
+            \JSON_THROW_ON_ERROR |
+            \JSON_UNESCAPED_LINE_TERMINATORS |
+            \JSON_UNESCAPED_SLASHES |
+            \JSON_UNESCAPED_UNICODE
+        ));
+
+        if ($app->isProduction()) {
+            /**
+             * 此设置将仅报告 1% 的耗时超过 2 秒的查询，从而帮助您监控性能而不会使日志记录系统不堪重负。
+             *
+             * @see https://www.harrisrafto.eu/harnessing-controlled-randomness-with-laravels-lottery/
+             */
+            DB::whenQueryingForLongerThan(
+                CarbonInterval::seconds(2),
+                Lottery::odds(1, 100)->winner(static function (Connection $connection, QueryExecuted $queryExecuted): void {}),
+            );
+
+            DB::whenQueryingForLongerThan(
+                300000,
+                static function (Connection $connection, QueryExecuted $queryExecuted): void {}
+            );
+
+            DB::prohibitDestructiveCommands($app->isProduction());
+            Event::listen(DatabaseBusy::class, static function (DatabaseBusy $event): void {});
+        }
+
+        if (!$app->isProduction()) {
+            Model::handleLazyLoadingViolationUsing(static function (Model $model, string $relation): void {
+                info(\sprintf('Attempted to lazy load [%s] on model [%s].', $relation, $model::class));
+            });
+            Model::automaticallyEagerLoadRelationships(); // 避免 N+1 查询问题
+            Model::preventAccessingMissingAttributes(); // Trigger MissingAttributeException
+            Model::preventLazyLoading(); // 预防 N+1 查询问题
+            Model::preventSilentlyDiscardingAttributes(); // 防止模型静默丢弃不在 fillable 中的字段
+            Model::shouldBeStrict(); // Eloquent 严格模式
+        }
     })
     ->booting(static function (Application $app): void {
         /**
@@ -145,7 +280,7 @@ return Application::configure(basePath: \dirname(__DIR__))
             'php-interface' => \PHP_SAPI,
             'laravel-version' => $app->version(),
             'running-in-console' => $app->runningInConsole(),
-            // 'trace-id' => TRACE_ID,
+            'trace-id' => TRACE_ID,
         ]);
 
         $app->runningInConsole() or Context::add([
@@ -156,7 +291,7 @@ return Application::configure(basePath: \dirname(__DIR__))
             'action' => request()->route()?->getActionName(),
         ]);
     })
-    ->booting(function (Application $app): void {
+    ->booting(static function (Application $app): void {
         $app->resolving(static function (mixed $object, Application $app): void {
             if (
                 !\is_object($object)
@@ -209,69 +344,6 @@ return Application::configure(basePath: \dirname(__DIR__))
                     );
                 }
             }
-        });
-    })
-    ->booted(function (Application $app): void {
-        $app->booted(function (): void {
-            collect(Artisan::all())
-                ->each(
-                    static fn (SymfonyCommand $command): SymfonyCommand => $command
-                        ->addOption('xdebug', null, InputOption::VALUE_NONE, 'Display xdebug output')
-                        ->addOption(
-                            'configuration',
-                            null,
-                            InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
-                            'Used to dynamically pass one or more configuration key-value pairs(e.g. `--configuration=app.name=guanguans` or `--configuration app.name=guanguans`).',
-                        )
-                )
-                ->tap(
-                    /**
-                     * @see \Illuminate\Foundation\Console\Kernel::rerouteSymfonyCommandEvents()
-                     * @see \Rector\Console\ConsoleApplication::doRun()
-                     * @see https://github.com/infection/infection/blob/master/src/Command/RunCommand.php#L586
-                     * @see https://github.com/infection/infection/blob/master/src/Console/XdebugHandler.php
-                     * @see https://github.com/phan/phan/blob/v6/src/Phan/CLI.php#L3156
-                     * @see https://github.com/phan/phan/blob/v6/src/Phan/Library/Restarter.php
-                     * @see https://github.com/vimeo/psalm/blob/6.x/src/Psalm/Internal/Cli/Psalm.php#L948
-                     * @see https://github.com/vimeo/psalm/blob/6.x/src/Psalm/Internal/Fork/PsalmRestarter.php
-                     */
-                    fn (): null => Event::listen(CommandStarting::class, function (CommandStarting $commandStarting): void {
-                        if (
-                            class_exists(XdebugHandler::class)
-                            && !$commandStarting->input->hasParameterOption('--xdebug')
-                            && !app()->runningUnitTests()
-                        ) {
-                            $xdebugHandler = tap(
-                                new XdebugHandler(config('app.name')),
-                                static function (XdebugHandler $xdebugHandler): void {
-                                    // If Xdebug is enabled, restart without it
-                                    $xdebugHandler
-                                        // ->setLogger(Log::channel('stderr'))
-                                        ->setLogger(Log::channel(
-                                            Lottery::odds(1, 100)
-                                                ->winner(static fn (): null => null)
-                                                ->loser(static fn (): string => 'null')
-                                                ->choose()
-                                        ))
-                                        ->setPersistent()
-                                        ->check();
-                                }
-                            );
-                            unset($xdebugHandler);
-                        }
-
-                        collect($commandStarting->input->getOption('configuration'))
-                            // ->dump()
-                            ->mapWithKeys(static function (string $configuration): array {
-                                // Assert::contains($configuration, '=', "The configurable option [$configuration] must be formatted as key=value.");
-                                \assert(str_contains($configuration, '='), "The configurable option [$configuration] must be formatted as key=value.");
-                                [$key, $value] = str($configuration)->explode('=', 2)->all();
-
-                                return [$key => $value];
-                            })
-                            ->tap(static fn (Collection $configuration): mixed => config($configuration->all()));
-                    })
-                );
         });
     })
     ->withRouting(

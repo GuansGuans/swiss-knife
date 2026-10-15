@@ -30,6 +30,12 @@ final class User extends Authenticatable
 
     use Notifiable;
 
+    public function timezone(): string
+    {
+        // return $this->timezone ?? config('app.timezone');
+        throw new \LogicException('Not implemented yet.');
+    }
+
     /**
      * Get the attributes that should be cast.
      *

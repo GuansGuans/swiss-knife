@@ -121,7 +121,7 @@ return RectorConfig::configure()
             __DIR__.'/app/Support/Mixin/',
         ],
         RemoveDeadInstanceOfAssertRector::class => [
-            __DIR__.'/app/Providers/AppServiceProvider.php',
+            __DIR__.'/bootstrap/app.php',
             __DIR__.'/app/Providers/AutowiredServiceProvider.php',
         ],
         RemoveDumpDataDeadCodeRector::class => [

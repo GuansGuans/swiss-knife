@@ -98,7 +98,7 @@ final class CheckServiceProviderCommand extends AbstractCommand
     #[\Override]
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
-        $this->except = [...$this->except, ...$this->option('except')];
+        $this->except = [...$this->except, ...(array) $this->option('except')];
     }
 
     /**

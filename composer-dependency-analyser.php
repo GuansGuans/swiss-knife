@@ -33,12 +33,11 @@ return (new Configuration)
     ->ignoreErrors([ErrorType::SHADOW_DEPENDENCY])
     ->ignoreErrorsOnPackages(
         [
+            'chrome-php/chrome',
             'guanguans/laravel-exception-notify',
             'laravel/tinker',
-            'chrome-php/chrome',
             'opcodesio/log-viewer',
             'spatie/laravel-activitylog',
-            // 'spatie/laravel-schemaless-attributes',
             'spatie/laravel-backup',
             'swiss-devjoy/laravel-optimize-sqlite',
         ],
@@ -46,7 +45,7 @@ return (new Configuration)
     )
     ->ignoreErrorsOnPaths(
         [
-            __DIR__.'/app/Providers/AppServiceProvider.php',
+            __DIR__.'/bootstrap/app.php',
         ],
         [ErrorType::DEV_DEPENDENCY_IN_PROD]
     );

@@ -31,6 +31,9 @@ trait HasSchemalessAttributes
         $this->casts['extra_attributes'] = SchemalessAttributes::class;
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Builder<static>
+     */
     public function scopeWithExtraAttributes(): Builder
     {
         return $this->extra_attributes->modelScope();
@@ -38,8 +41,6 @@ trait HasSchemalessAttributes
 
     // /**
     //  * @return \Illuminate\Database\Eloquent\Builder<static>
-    //  *
-    //  * @noinspection PhpAttributeCanBeAddedToOverriddenMemberInspection
     //  */
     // #[Scope]
     // protected function withExtraAttributes(): Builder
