@@ -1,6 +1,8 @@
 <?php
 
 /** @noinspection AnonymousFunctionStaticInspection */
+/** @noinspection ClassConstantCanBeUsedInspection */
+/** @noinspection ClassnameLiteralInspection */
 /** @noinspection NullPointerExceptionInspection */
 /** @noinspection PhpPossiblePolymorphicInvocationInspection */
 /** @noinspection PhpUndefinedClassInspection */

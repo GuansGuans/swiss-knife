@@ -11,6 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/GuansGuans/swiss-knife
  */
 
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', static fn () => view('welcome'))->name('index');
+Route::get('/', static fn (): View => view('welcome'))->name('index');

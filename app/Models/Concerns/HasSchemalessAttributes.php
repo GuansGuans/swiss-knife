@@ -26,25 +26,32 @@ use Spatie\SchemalessAttributes\Casts\SchemalessAttributes;
  */
 trait HasSchemalessAttributes
 {
+    /**
+     * @noinspection OverrideMissingInspection
+     */
     public function initializeHasSchemalessAttributes(): void
     {
         $this->casts['extra_attributes'] = SchemalessAttributes::class;
     }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Builder<static>
-     */
-    public function scopeWithExtraAttributes(): Builder
-    {
-        return $this->extra_attributes->modelScope();
-    }
-
     // /**
     //  * @return \Illuminate\Database\Eloquent\Builder<static>
+    //  *
+    //  * @noinspection OverrideMissingInspection
     //  */
-    // #[Scope]
-    // protected function withExtraAttributes(): Builder
+    // public function scopeWithExtraAttributes(): Builder
     // {
     //     return $this->extra_attributes->modelScope();
     // }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Builder<static>
+     *
+     * @noinspection OverrideMissingInspection
+     */
+    #[Scope]
+    protected function withExtraAttributes(): Builder
+    {
+        return $this->extra_attributes->modelScope();
+    }
 }

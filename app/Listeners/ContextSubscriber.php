@@ -30,20 +30,20 @@ final class ContextSubscriber
     public function subscribe(): array
     {
         return [
-            RouteMatched::class => static function (RouteMatched $event): void {
+            RouteMatched::class => static function (RouteMatched $routeMatched): void {
                 Context::add([
-                    'action' => $event->route->getActionName(),
+                    'action' => $routeMatched->route->getActionName(),
                 ]);
             },
-            CommandStarting::class => static function (CommandStarting $event): void {
+            CommandStarting::class => static function (CommandStarting $commandStarting): void {
                 Context::add([
-                    'command' => $event->command ?? $event->input->getArguments()['command'] ?? 'default',
+                    'command' => $commandStarting->command ?? $commandStarting->input->getArguments()['command'] ?? 'default',
                 ]);
             },
-            ScheduledTaskStarting::class => static function (ScheduledTaskStarting $event): void {
+            ScheduledTaskStarting::class => static function (ScheduledTaskStarting $scheduledTaskStarting): void {
                 /** @noinspection NestedTernaryOperatorInspection */
                 Context::add([
-                    'command' => ($event->task->command ?: $event->task->description) ?: 'Closure',
+                    'command' => ($scheduledTaskStarting->task->command ?: $scheduledTaskStarting->task->description) ?: 'Closure',
                 ]);
             },
         ];

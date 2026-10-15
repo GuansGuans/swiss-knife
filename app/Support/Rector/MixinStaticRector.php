@@ -51,7 +51,7 @@ final class MixinStaticRector extends AbstractRector
         if (
             $node->isPrivate()
             || !array_find(
-                ScopeFetcher::fetch($node)->getClassReflection()->getAttributes(),
+                (array) ScopeFetcher::fetch($node)->getClassReflection()?->getAttributes(),
                 static fn (AttributeReflection $attributeReflection): bool => $attributeReflection->getName() === Mixin::class
             ) instanceof AttributeReflection
         ) {
@@ -171,10 +171,10 @@ final class MixinStaticRector extends AbstractRector
         ];
     }
 
-    private function isUsedThisVariable(ClassMethod $node): bool
+    private function isUsedThisVariable(ClassMethod $classMethod): bool
     {
         return (bool) $this->betterNodeFinder->findFirst(
-            (array) $node->getStmts(),
+            (array) $classMethod->getStmts(),
             fn (Node $subNode): bool => $subNode instanceof Variable && $this->isName($subNode, 'this')
         );
     }

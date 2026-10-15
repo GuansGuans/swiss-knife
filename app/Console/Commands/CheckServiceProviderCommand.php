@@ -1,6 +1,5 @@
 <?php
 
-/** @noinspection PropertyCanBeStaticInspection */
 declare(strict_types=1);
 
 /**
@@ -46,15 +45,15 @@ final class CheckServiceProviderCommand extends AbstractCommand
 
         /** @noinspection UsingInclusionReturnValueInspection */
         $discoveredPackages = collect(require base_path('bootstrap/cache/packages.php'))->reject(
-            fn (array $map, string $package): bool => str($package)->is($this->except)
+            fn (array $_, string $package): bool => str($package)->is($this->except)
         );
         $shouldntDiscoverPackages = $discoveredPackages->filter(static fn (
-            array $map,
+            array $_,
             string $package
         ): bool => \in_array($package, $devPackages, true) && !\in_array($package, $dontDiscoverPackages, true));
         $indirectDiscoveredPackages = $discoveredPackages
             ->filter(static fn (
-                array $map,
+                array $_,
                 string $package
             ): bool => !\in_array($package, $prodPackages, true) && !\in_array($package, $devPackages, true))
             ->when($this->option('ignore-indirect'), static fn (): Collection => Collection::empty());

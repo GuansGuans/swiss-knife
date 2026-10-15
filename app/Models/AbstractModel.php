@@ -1,6 +1,5 @@
 <?php
 
-/** @noinspection LaravelUnknownEloquentFactoryInspection */
 declare(strict_types=1);
 
 /**

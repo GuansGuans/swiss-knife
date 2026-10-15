@@ -1,5 +1,10 @@
 <?php
 
+/** @noinspection ClassConstantCanBeUsedInspection */
+/** @noinspection ClassnameLiteralInspection */
+/** @noinspection D */
+/** @noinspection LaravelUnknownConfigKeyInspection */
+/** @noinspection PhpInternalEntityUsedInspection */
 declare(strict_types=1);
 
 /**
@@ -50,11 +55,13 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Lottery;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
+use Laravel\Doctor\Diagnostics\ComposerAuditPasses;
+use Laravel\Doctor\Diagnostics\ComposerAutoloadIsValid;
 use Pdo\Mysql;
 
 \defined('TRACE_ID') or \define('TRACE_ID', (string) Str::uuid7());
 
-return Application::configure(basePath: \dirname(__DIR__))
+return Application::configure(\dirname(__DIR__))
     ->registered(static function (): void {
         classes(
             static fn (string $class, string $file): bool => str($class)->is('App\\Support\\Mixin\\*')
@@ -63,7 +70,7 @@ return Application::configure(basePath: \dirname(__DIR__))
             // ->keys()->dd()
             ->each(static function (ReflectionClass $reflectionClass, string $class): void {
                 $reflectionAttributes = $reflectionClass->getAttributes(Mixin::class);
-                \assert(\count($reflectionAttributes) === 1);
+                \assert(1 === \count($reflectionAttributes));
 
                 $mixinAttribute = $reflectionAttributes[0]->newInstance();
                 \assert($mixinAttribute instanceof Mixin);
@@ -73,12 +80,12 @@ return Application::configure(basePath: \dirname(__DIR__))
                 }
             });
     })
-    ->registered(static function (Application $app): void {
-        if ($app->isLocal()) {
-            $app->register(SoarServiceProvider::class);
+    ->registered(static function (Application $application): void {
+        if ($application->isLocal()) {
+            $application->register(SoarServiceProvider::class);
         }
 
-        if (!$app->isProduction()) {
+        if (!$application->isProduction()) {
             foreach (
                 [
                     'Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider',
@@ -99,15 +106,9 @@ return Application::configure(basePath: \dirname(__DIR__))
                     'Worksome\\Envy\\EnvyServiceProvider',
                 ] as $provider
             ) {
-                $app->register($provider);
+                $application->register($provider);
             }
         }
-    })
-    ->booting(static function (Application $app): void {
-        /**
-         * @see https://masteringlaravel.io/daily/2024-11-13-how-can-you-make-sure-the-environment-is-configured-correctly
-         */
-        Env::getOrFail('APP_NAME');
     })
     ->booting(static function (): void {
         config([
@@ -141,6 +142,13 @@ return Application::configure(basePath: \dirname(__DIR__))
             ],
         ]);
 
+        config([
+            'doctor.except' => [
+                ComposerAuditPasses::class,
+                ComposerAutoloadIsValid::class,
+            ],
+        ]);
+
         File::ensureDirectoryExists(base_path('vendor/_laravel_ide_helper/'));
         config([
             'ide-helper.filename' => base_path('vendor/_laravel_ide_helper/_ide_helper.php'),
@@ -151,6 +159,12 @@ return Application::configure(basePath: \dirname(__DIR__))
         config([
             'localization.align' => false,
         ]);
+    })
+    ->booting(static function (): void {
+        /**
+         * @see https://masteringlaravel.io/daily/2024-11-13-how-can-you-make-sure-the-environment-is-configured-correctly
+         */
+        Env::getOrFail('APP_NAME');
     })
     ->booting(static function (): void {
         /**
@@ -177,7 +191,7 @@ return Application::configure(basePath: \dirname(__DIR__))
         request()->server->set('SERVER_PORT', 443);
         URL::forceHttps();
     })
-    ->booting(static function (Application $app): void {
+    ->booting(static function (Application $application): void {
         /**
          * @see \Carbon\Laravel\ServiceProvider
          * @see https://dyrynda.com.au/blog/laravel-immutable-dates
@@ -194,11 +208,11 @@ return Application::configure(basePath: \dirname(__DIR__))
          * @see https://zh.wikipedia.org/wiki/ISO_4217
          */
         Number::useCurrency('CNY');
-        Date::setLocale($app->getLocale());
-        Number::useLocale($app->getLocale());
+        Date::setLocale($application->getLocale());
+        Number::useLocale($application->getLocale());
     })
-    ->booting(static function (Application $app): void {
-        if (!$app->runningUnitTests()) {
+    ->booting(static function (Application $application): void {
+        if (!$application->runningUnitTests()) {
             return;
         }
 
@@ -214,13 +228,13 @@ return Application::configure(basePath: \dirname(__DIR__))
             Artisan::call('db:seed');
         });
     })
-    ->booting(static function (Application $app): void {
-        Event::listen(StatementPrepared::class, static function (StatementPrepared $event): void {
-            $event->statement->setFetchMode(PDO::FETCH_ASSOC);
+    ->booting(static function (Application $application): void {
+        Event::listen(StatementPrepared::class, static function (StatementPrepared $statementPrepared): void {
+            $statementPrepared->statement->setFetchMode(PDO::FETCH_ASSOC);
         });
 
-        Event::listen(ConnectionEstablished::class, static function (ConnectionEstablished $event): void {
-            if ($event->connection instanceof SQLiteConnection) {
+        Event::listen(ConnectionEstablished::class, static function (ConnectionEstablished $connectionEstablished): void {
+            if ($connectionEstablished->connection instanceof SQLiteConnection) {
                 // Enable on delete cascade for sqlite connections.
                 DB::statement(DB::raw('PRAGMA foreign_keys = ON')->getValue(DB::getQueryGrammar()));
             }
@@ -239,7 +253,7 @@ return Application::configure(basePath: \dirname(__DIR__))
             \JSON_UNESCAPED_UNICODE
         ));
 
-        if ($app->isProduction()) {
+        if ($application->isProduction()) {
             /**
              * 此设置将仅报告 1% 的耗时超过 2 秒的查询，从而帮助您监控性能而不会使日志记录系统不堪重负。
              *
@@ -255,11 +269,11 @@ return Application::configure(basePath: \dirname(__DIR__))
                 static function (Connection $connection, QueryExecuted $queryExecuted): void {}
             );
 
-            DB::prohibitDestructiveCommands($app->isProduction());
-            Event::listen(DatabaseBusy::class, static function (DatabaseBusy $event): void {});
+            DB::prohibitDestructiveCommands($application->isProduction());
+            Event::listen(DatabaseBusy::class, static function (DatabaseBusy $databaseBusy): void {});
         }
 
-        if (!$app->isProduction()) {
+        if (!$application->isProduction()) {
             Model::handleLazyLoadingViolationUsing(static function (Model $model, string $relation): void {
                 info(\sprintf('Attempted to lazy load [%s] on model [%s].', $relation, $model::class));
             });
@@ -270,20 +284,20 @@ return Application::configure(basePath: \dirname(__DIR__))
             Model::shouldBeStrict(); // Eloquent 严格模式
         }
     })
-    ->booting(static function (Application $app): void {
+    ->booting(static function (Application $application): void {
         /**
          * @see \Guanguans\LaravelExceptionNotify\Collectors\ApplicationCollector
          * @see \Illuminate\Log\Context\ContextServiceProvider::boot()
          */
         Context::add([
+            'trace-id' => TRACE_ID,
             'php-version' => \PHP_VERSION,
             'php-interface' => \PHP_SAPI,
-            'laravel-version' => $app->version(),
-            'running-in-console' => $app->runningInConsole(),
-            'trace-id' => TRACE_ID,
+            'laravel-version' => $application->version(),
+            'running-in-console' => $application->runningInConsole(),
         ]);
 
-        $app->runningInConsole() or Context::add([
+        $application->runningInConsole() or Context::add([
             'user-id' => request()->user()?->id,
             'url' => request()->url(),
             'ip' => request()->ip(),
@@ -291,8 +305,8 @@ return Application::configure(basePath: \dirname(__DIR__))
             'action' => request()->route()?->getActionName(),
         ]);
     })
-    ->booting(static function (Application $app): void {
-        $app->resolving(static function (mixed $object, Application $app): void {
+    ->booting(static function (Application $application): void {
+        $application->resolving(static function (mixed $object, Application $application): void {
             if (
                 !\is_object($object)
                 || !str($object::class)->is(config('services.autowired.only'))
@@ -335,7 +349,7 @@ return Application::configure(basePath: \dirname(__DIR__))
 
                 try {
                     // \PHP_VERSION_ID >= 80100 or $reflectionProperty->isPublic() or $reflectionProperty->setAccessible(true);
-                    $reflectionProperty->setValue($object, $app->make($propertyType, $autowired->parameters));
+                    $reflectionProperty->setValue($object, $application->make($propertyType, $autowired->parameters));
                 } catch (Throwable $throwable) {
                     throw new TypeError(
                         "Type [$propertyType] of property [$property] resolve failed [{$throwable->getMessage()}].",
@@ -354,6 +368,6 @@ return Application::configure(basePath: \dirname(__DIR__))
     ->withMiddleware(static function (Middleware $middleware): void {})
     ->withExceptions(static function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            static fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
+            static fn (Request $request): bool => $request->is('api/*') || $request->expectsJson(),
         );
     })->create();

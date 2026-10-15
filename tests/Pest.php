@@ -110,8 +110,8 @@ expect()->extend(
         ->toBeLessThanOrEqual($max)
 );
 
-expect()->intercept('toBe', Model::class, function (Model $expected): void {
-    expect($this->value->id)->toBe($expected->id);
+expect()->intercept('toBe', Model::class, function (Model $model): void {
+    expect($this->value->id)->toBe($model->id);
 });
 
 expect()->pipe('toBe', function (Closure $next, mixed $expected): ?Expectation {

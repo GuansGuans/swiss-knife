@@ -22,9 +22,8 @@
 git clone ...
 cd swiss-knife/
 composer install --no-dev --ansi -v
-cp .env.example .env # 配置相关环境变量
-php artisan key:generate
-php artisan storage:link
+composer app:install-project
+# ...配置相关环境变量
 ```
 
 ## Usage

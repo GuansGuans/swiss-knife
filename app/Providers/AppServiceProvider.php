@@ -41,12 +41,12 @@ final class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(Application $app): void
+    public function boot(Application $application): void
     {
-        $app->booted(static function (): void {
+        $application->booted(static function (): void {
             collect(Artisan::all())
                 ->each(
-                    static fn (SymfonyCommand $command): SymfonyCommand => $command
+                    static fn (SymfonyCommand $symfonyCommand): SymfonyCommand => $symfonyCommand
                         ->addOption('xdebug', null, InputOption::VALUE_NONE, 'Display xdebug output')
                         ->addOption(
                             'configuration',

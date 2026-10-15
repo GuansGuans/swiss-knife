@@ -21,39 +21,39 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('jobs', static function (Blueprint $table): void {
-            $table->id();
-            $table->string('queue')->index();
-            $table->longText('payload');
-            $table->unsignedSmallInteger('attempts');
-            $table->unsignedInteger('reserved_at')->nullable();
-            $table->unsignedInteger('available_at');
-            $table->unsignedInteger('created_at');
+        Schema::create('jobs', static function (Blueprint $blueprint): void {
+            $blueprint->id();
+            $blueprint->string('queue')->index();
+            $blueprint->longText('payload');
+            $blueprint->unsignedSmallInteger('attempts');
+            $blueprint->unsignedInteger('reserved_at')->nullable();
+            $blueprint->unsignedInteger('available_at');
+            $blueprint->unsignedInteger('created_at');
         });
 
-        Schema::create('job_batches', static function (Blueprint $table): void {
-            $table->string('id')->primary();
-            $table->string('name');
-            $table->integer('total_jobs');
-            $table->integer('pending_jobs');
-            $table->integer('failed_jobs');
-            $table->longText('failed_job_ids');
-            $table->mediumText('options')->nullable();
-            $table->integer('cancelled_at')->nullable();
-            $table->integer('created_at');
-            $table->integer('finished_at')->nullable();
+        Schema::create('job_batches', static function (Blueprint $blueprint): void {
+            $blueprint->string('id')->primary();
+            $blueprint->string('name');
+            $blueprint->integer('total_jobs');
+            $blueprint->integer('pending_jobs');
+            $blueprint->integer('failed_jobs');
+            $blueprint->longText('failed_job_ids');
+            $blueprint->mediumText('options')->nullable();
+            $blueprint->integer('cancelled_at')->nullable();
+            $blueprint->integer('created_at');
+            $blueprint->integer('finished_at')->nullable();
         });
 
-        Schema::create('failed_jobs', static function (Blueprint $table): void {
-            $table->id();
-            $table->string('uuid')->unique();
-            $table->string('connection');
-            $table->string('queue');
-            $table->longText('payload');
-            $table->longText('exception');
-            $table->timestamp('failed_at')->useCurrent();
+        Schema::create('failed_jobs', static function (Blueprint $blueprint): void {
+            $blueprint->id();
+            $blueprint->string('uuid')->unique();
+            $blueprint->string('connection');
+            $blueprint->string('queue');
+            $blueprint->longText('payload');
+            $blueprint->longText('exception');
+            $blueprint->timestamp('failed_at')->useCurrent();
 
-            $table->index(['connection', 'queue', 'failed_at']);
+            $blueprint->index(['connection', 'queue', 'failed_at']);
         });
     }
 

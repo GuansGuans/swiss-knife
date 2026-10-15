@@ -21,16 +21,16 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('cache', static function (Blueprint $table): void {
-            $table->string('key')->primary();
-            $table->mediumText('value');
-            $table->bigInteger('expiration')->index();
+        Schema::create('cache', static function (Blueprint $blueprint): void {
+            $blueprint->string('key')->primary();
+            $blueprint->mediumText('value');
+            $blueprint->bigInteger('expiration')->index();
         });
 
-        Schema::create('cache_locks', static function (Blueprint $table): void {
-            $table->string('key')->primary();
-            $table->string('owner');
-            $table->bigInteger('expiration')->index();
+        Schema::create('cache_locks', static function (Blueprint $blueprint): void {
+            $blueprint->string('key')->primary();
+            $blueprint->string('owner');
+            $blueprint->bigInteger('expiration')->index();
         });
     }
 

@@ -1,6 +1,8 @@
 <?php
 
 /** @noinspection AnonymousFunctionStaticInspection */
+/** @noinspection ClassConstantCanBeUsedInspection */
+/** @noinspection ClassnameLiteralInspection */
 /** @noinspection NullPointerExceptionInspection */
 /** @noinspection PhpPossiblePolymorphicInvocationInspection */
 /** @noinspection PhpUndefinedClassInspection */
@@ -25,12 +27,12 @@ use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
 it('is command naming', function (): void {
     collect(Artisan::all())
-        ->filter(fn (SymfonyCommand $command): bool => str($command::class)->startsWith('App\\Console\\Commands'))
-        ->reject(fn (SymfonyCommand $command): bool => str($command->getName())->is([]))
+        ->filter(fn (SymfonyCommand $symfonyCommand): bool => str($symfonyCommand::class)->startsWith('App\\Console\\Commands'))
+        ->reject(fn (SymfonyCommand $symfonyCommand): bool => str($symfonyCommand->getName())->is([]))
         ->each(
-            fn (SymfonyCommand $command) => expect(str($command->getName())->replaceMatches('/\d/', '')->explode(':'))
+            fn (SymfonyCommand $symfonyCommand) => expect(str($symfonyCommand->getName())->replaceMatches('/\d/', '')->explode(':'))
                 ->each
-                ->toBeKebabCase(\sprintf('The command [%s] name [%s] should be kebab case.', $command::class, $command->getName()))
+                ->toBeKebabCase(\sprintf('The command [%s] name [%s] should be kebab case.', $symfonyCommand::class, $symfonyCommand->getName()))
         );
 })->group(__DIR__, __FILE__);
 

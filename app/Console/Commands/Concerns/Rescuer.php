@@ -30,7 +30,6 @@ trait Rescuer
      *
      * @return \Throwable|TValue
      *
-     * @noinspection RedundantDocCommentTagInspection
      * @noinspection PhpMixedReturnTypeCanBeReducedInspection
      */
     public function rescue(callable $callback, bool|callable $report = false): mixed

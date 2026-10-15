@@ -119,9 +119,9 @@ final class ClassHandleMethodRector extends AbstractRector implements Documented
         );
     }
 
-    private function updateDocBlock(ClassMethod $node): void
+    private function updateDocBlock(ClassMethod $classMethod): void
     {
-        $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($node);
+        $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($classMethod);
         $noinspectionTag = 'noinspection';
         $noinspectionTagValue = 'RedundantDocCommentTagInspection';
 
@@ -152,10 +152,10 @@ final class ClassHandleMethodRector extends AbstractRector implements Documented
             //     new GenericTagValueNode('\Closure(\Illuminate\Http\Request): \Symfony\Component\HttpFoundation\Response $next')
             // ));
 
-            // \RectorPrefix202503\print_node($node);
+            // \RectorPrefix202503\print_node($classMethod);
         }
 
-        $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($node);
+        $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($classMethod);
     }
 
     private function addEmptyPhpDocTagNodeFor(PhpDocInfo $phpDocInfo): void

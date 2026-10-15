@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection D */
+
 /** @noinspection PhpUnused */
 declare(strict_types=1);
 
@@ -114,13 +116,13 @@ final class ComposerScripts
                 $module = select(
                     label: 'Please select Module',
                     options: $allMethods
-                        ->groupBy(static fn (Collection $methods, string $class) => str($class)->explode('\\')->get(1))
+                        ->groupBy(static fn (Collection $_, string $class) => str($class)->explode('\\')->get(1))
                         ->keys(),
                     scroll: 15,
                 );
 
                 return $allMethods->filter(
-                    static fn (Collection $methods, string $class) => str($class)->contains($module)
+                    static fn (Collection $_, string $class) => str($class)->contains($module)
                 );
             })
             ->each(static function (Collection $methods, string $class) use ($event): void {

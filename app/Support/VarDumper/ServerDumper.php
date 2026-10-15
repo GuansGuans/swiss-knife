@@ -74,8 +74,6 @@ final readonly class ServerDumper implements DataDumperInterface
      * @param null|list<ContextProviderInterface> $contextProviders
      *
      * @noinspection PhpVoidFunctionResultUsedInspection
-     * @noinspection GlobalVariableUsageInspection
-     * @noinspection IssetArgumentExistenceInspection
      */
     public static function register(
         ?DataDumperInterface $fallbackDumper = null,

@@ -124,7 +124,6 @@ if (!\function_exists('dump_to_server')) {
      * ./vendor/bin/var-dump-server
      * ```.
      *
-     * @noinspection GlobalVariableUsageInspection
      * @noinspection ForgottenDebugOutputInspection
      * @noinspection DebugFunctionUsageInspection
      */
@@ -234,7 +233,6 @@ if (!\function_exists('resolve_callback')) {
      *
      * @throws \Throwable
      *
-     * @noinspection RedundantDocCommentTagInspection
      * @noinspection DebugFunctionUsageInspection
      */
     function resolve_callback(callable|string $callback): callable
