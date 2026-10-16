@@ -26,9 +26,14 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
+.agents/
+.ai/
 .build/
+.claude/
+.github/skills/
 .history/
 .idea/
+.junie/
 .tinker/
 tests/Browser/Screenshots/
 vendor/
@@ -49,3 +54,9 @@ phpbench.json
 phpstan.neon
 phpunit.xml
 rr
+
+.mcp.json
+AGENTS.md
+boost.json
+CLAUDE.md
+opencode.json

@@ -49,7 +49,6 @@ return (new Configuration)
     )
     ->ignoreErrorsOnPackages(
         [
-            'chrome-php/chrome',
             'guanguans/laravel-exception-notify',
             'laravel/tinker',
             'opcodesio/log-viewer',

@@ -17,6 +17,8 @@ declare(strict_types=1);
  */
 
 use App\Listeners\ContextSubscriber;
+use App\Rules\AbstractRule;
+use App\Rules\MaxUploadSizeRule;
 use App\Support\Attribute\Autowired;
 use App\Support\Attribute\Mixin;
 use App\Support\VarDumper\ServerDumper;
@@ -24,6 +26,8 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\CarbonInterval;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Validation\DataAwareRule;
+use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Database\Eloquent\Model;
@@ -52,12 +56,18 @@ use Illuminate\Support\Facades\ParallelTesting;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Lottery;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Email;
+use Illuminate\Validation\Rules\File as FileRule;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Validator;
 use Laravel\Doctor\Diagnostics\ComposerAuditPasses;
 use Laravel\Doctor\Diagnostics\ComposerAutoloadIsValid;
 use Pdo\Mysql;
+use function Illuminate\Filesystem\join_paths;
 use function Illuminate\Support\php_binary;
 
 \defined('TRACE_ID') or \define('TRACE_ID', (string) Str::uuid7());
@@ -101,6 +111,7 @@ return Application::configure(\dirname(__DIR__))
                     'Dedoc\\Scramble\\ScrambleServiceProvider',
                     // 'Guanguans\\LaravelSoar\\SoarServiceProvider',
                     'KitLoong\\MigrationsGenerator\\MigrationsGeneratorServiceProvider',
+                    'Laravel\\Boost\\BoostServiceProvider',
                     'Laravel\\Doctor\\DoctorServiceProvider',
                     'Laravel\\Pail\\PailServiceProvider',
                     'Laravel\\Pao\\Laravel\\ServiceProvider',
@@ -149,6 +160,12 @@ return Application::configure(\dirname(__DIR__))
                     'App\Support\Mixin\*',
                 ],
             ],
+            'services.net_ease_cloud_music' => [
+                'user_ids' => env_explode('NET_EASE_CLOUD_MUSIC_USER_IDS', [
+                    284761234,
+                    13655983778,
+                ]),
+            ],
         ]);
 
         config([
@@ -158,11 +175,11 @@ return Application::configure(\dirname(__DIR__))
             ],
         ]);
 
-        File::ensureDirectoryExists(base_path('vendor/_laravel_ide_helper/'));
+        File::ensureDirectoryExists($directory = base_path('vendor/_laravel_ide_helper/'));
         config([
-            'ide-helper.filename' => base_path('vendor/_laravel_ide_helper/_ide_helper.php'),
-            'ide-helper.meta_filename' => base_path('vendor/_laravel_ide_helper/.phpstorm.meta.php'),
-            'ide-helper.models_filename' => base_path('vendor/_laravel_ide_helper/_ide_helper_models.php'),
+            'ide-helper.filename' => join_paths($directory, '_ide_helper.php'),
+            'ide-helper.meta_filename' => join_paths($directory, '.phpstorm.meta.php'),
+            'ide-helper.models_filename' => join_paths($directory, '_ide_helper_models.php'),
         ]);
 
         config([
@@ -174,6 +191,23 @@ return Application::configure(\dirname(__DIR__))
          * @see https://masteringlaravel.io/daily/2024-11-13-how-can-you-make-sure-the-environment-is-configured-correctly
          */
         Env::getOrFail('APP_NAME');
+    })
+    ->booting(static function (Application $application): void {
+        if (!$application->runningUnitTests()) {
+            return;
+        }
+
+        CarbonImmutable::setTestNow();
+        CarbonImmutable::setTestNowAndTimezone();
+        Date::setTestNow();
+        Date::setTestNowAndTimezone();
+        Http::preventStrayRequests();
+        Mail::alwaysTo('example@example.com');
+        Mail::fake();
+        Queue::fake();
+        ParallelTesting::setUpTestDatabase(static function (): void {
+            Artisan::call('db:seed');
+        });
     })
     ->booting(static function (): void {
         /**
@@ -202,6 +236,27 @@ return Application::configure(\dirname(__DIR__))
     })
     ->booting(static function (Application $application): void {
         /**
+         * @see \Guanguans\LaravelExceptionNotify\Collectors\ApplicationCollector
+         * @see \Illuminate\Log\Context\ContextServiceProvider::boot()
+         */
+        Context::add([
+            'trace-id' => TRACE_ID,
+            'php-version' => \PHP_VERSION,
+            'php-interface' => \PHP_SAPI,
+            'laravel-version' => $application->version(),
+            'running-in-console' => $application->runningInConsole(),
+        ]);
+
+        $application->runningInConsole() or Context::add([
+            'user-id' => request()->user()?->id,
+            'url' => request()->url(),
+            'ip' => request()->ip(),
+            'method' => request()->method(),
+            'action' => request()->route()?->getActionName(),
+        ]);
+    })
+    ->booting(static function (Application $application): void {
+        /**
          * @see \Carbon\Laravel\ServiceProvider
          * @see https://dyrynda.com.au/blog/laravel-immutable-dates
          */
@@ -222,21 +277,58 @@ return Application::configure(\dirname(__DIR__))
         Number::useLocale($application->getLocale());
     })
     ->booting(static function (Application $application): void {
-        if (!$application->runningUnitTests()) {
-            return;
-        }
+        Email::defaults(static fn (): Email => Email::default()->when(
+            $application->isProduction(),
+            static fn (Email $email) => $email
+                // ->rfcCompliant()
+                ->strict()
+                ->validateMxRecord()
+                ->preventSpoofing()
+                ->withNativeValidation()
+        ));
 
-        CarbonImmutable::setTestNow();
-        CarbonImmutable::setTestNowAndTimezone();
-        Date::setTestNow();
-        Date::setTestNowAndTimezone();
-        Http::preventStrayRequests();
-        Mail::alwaysTo('example@example.com');
-        Mail::fake();
-        Queue::fake();
-        ParallelTesting::setUpTestDatabase(static function (): void {
-            Artisan::call('db:seed');
-        });
+        FileRule::defaults(static fn (): FileRule => FileRule::default()->when(
+            $application->isProduction(),
+            static fn (FileRule $fileRule) => $fileRule->rules([MaxUploadSizeRule::make()])
+        ));
+
+        Password::defaults(static fn (): Password => Password::min(8)->max(64)->when(
+            $application->isProduction(),
+            static fn (#[SensitiveParameter] Password $password) => $password
+                ->letters()
+                ->mixedCase()
+                ->numbers()
+                ->symbols()
+                ->uncompromised()
+        ));
+
+        classes(
+            static fn (string $class, string $file): bool => str($class)->is('App\\Rules\\*')
+                && str($file)->is('*/../../app/Rules/*')
+        )
+            ->filter(
+                static fn (ReflectionClass $reflectionClass): bool => $reflectionClass->isSubclassOf(AbstractRule::class)
+                    && $reflectionClass->isInstantiable()
+            )
+            // ->keys()->dd()
+            ->each(
+                /**
+                 * @param class-string<\App\Rules\AbstractRule> $ruleClass
+                 */
+                static function (ReflectionClass $_, string $ruleClass): void {
+                    ValidatorFacade::{$ruleClass::extendMethod()}(
+                        $ruleClass::name(),
+                        static fn (string $attribute, mixed $value, array $parameters, Validator $validator): bool => tap(
+                            new $ruleClass(...$parameters),
+                            static function (AbstractRule $rule) use ($validator): void {
+                                $rule instanceof DataAwareRule and $rule->setData($validator->getData());
+                                $rule instanceof ValidatorAwareRule and $rule->setValidator($validator);
+                            }
+                        )->passes($attribute, $value),
+                        $ruleClass::message()
+                    );
+                }
+            );
     })
     ->booting(static function (Application $application): void {
         Event::listen(StatementPrepared::class, static function (StatementPrepared $statementPrepared): void {
@@ -293,27 +385,6 @@ return Application::configure(\dirname(__DIR__))
             Model::preventSilentlyDiscardingAttributes(); // 防止模型静默丢弃不在 fillable 中的字段
             Model::shouldBeStrict(); // Eloquent 严格模式
         }
-    })
-    ->booting(static function (Application $application): void {
-        /**
-         * @see \Guanguans\LaravelExceptionNotify\Collectors\ApplicationCollector
-         * @see \Illuminate\Log\Context\ContextServiceProvider::boot()
-         */
-        Context::add([
-            'trace-id' => TRACE_ID,
-            'php-version' => \PHP_VERSION,
-            'php-interface' => \PHP_SAPI,
-            'laravel-version' => $application->version(),
-            'running-in-console' => $application->runningInConsole(),
-        ]);
-
-        $application->runningInConsole() or Context::add([
-            'user-id' => request()->user()?->id,
-            'url' => request()->url(),
-            'ip' => request()->ip(),
-            'method' => request()->method(),
-            'action' => request()->route()?->getActionName(),
-        ]);
     })
     ->booting(static function (Application $application): void {
         $application->resolving(static function (mixed $object, Application $application): void {

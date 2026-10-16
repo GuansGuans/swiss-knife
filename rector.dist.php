@@ -18,6 +18,7 @@ use Ergebnis\Rector\Rules\Expressions\Arrays\SortAssociativeArrayByKeyRector;
 use Guanguans\PhpCsFixerCustomFixers\Support\Utils;
 use Guanguans\RectorRules\Rector\Array_\SortListItemOfSameScalarTypeRector;
 use Guanguans\RectorRules\Rector\File\AddNoinspectionDocblockToFileFirstStmtRector;
+use Guanguans\RectorRules\Rector\FunctionLike\RenameGarbageParamNameRector;
 use Guanguans\RectorRules\Rector\Name\RenameToConventionalCaseNameRector;
 use Guanguans\RectorRules\Rector\Scalar\StringToClassConstantOfRequestOptionsRector;
 use Guanguans\RectorRules\Set\SetList;
@@ -38,6 +39,7 @@ use RectorLaravel\Rector\ArrayDimFetch\ArrayToArrGetRector;
 use RectorLaravel\Rector\Empty_\EmptyToBlankAndFilledFuncRector;
 use RectorLaravel\Rector\FuncCall\HelperFuncCallToFacadeClassRector;
 use RectorLaravel\Rector\FuncCall\RemoveDumpDataDeadCodeRector;
+use RectorLaravel\Rector\FuncCall\TypeHintTappableCallRector;
 use RectorLaravel\Rector\If_\ThrowIfRector;
 use RectorLaravel\Rector\MethodCall\ValidationRuleArrayStringValueToArrayRector;
 use RectorLaravel\Rector\StaticCall\DispatchToHelperFunctionsRector;
@@ -81,6 +83,9 @@ return RectorConfig::configure()
         RemoveExtraParametersRector::class => [
             __DIR__.'/app/Support/Mixin/',
         ],
+        RenameGarbageParamNameRector::class => [
+            '*Abstract*.php',
+        ],
         RenameToConventionalCaseNameRector::class => [
             __DIR__.'/app/Models/',
         ],
@@ -91,6 +96,7 @@ return RectorConfig::configure()
             __DIR__.'/database/',
         ],
         SortListItemOfSameScalarTypeRector::class => [
+            __DIR__.'/app/Console/Commands/NetEaseCloudMusicCommand.php',
             __DIR__.'/config/',
             __DIR__.'/database/migrations/',
         ],
@@ -100,6 +106,9 @@ return RectorConfig::configure()
         ],
         StringToClassConstantOfRequestOptionsRector::class => [
             __DIR__.'/config/telescope.php',
+        ],
+        TypeHintTappableCallRector::class => [
+            __DIR__.'/bootstrap/app.php',
         ],
     ])
     ->withCache(__DIR__.'/.build/rector/')

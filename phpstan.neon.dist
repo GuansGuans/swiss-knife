@@ -76,7 +76,7 @@ parameters:
         exceptionMustImplementNativeThrowable:
             nativeThrowable: App\Contracts\Throwable
     sidzIgnoreNumericStrings: true
-    sidzIgnoreMagicNumbers: [2, 3, 10, 14, 16, 20, 45, 64, 90, 100, 120, 200, 443, 512, 600, 2525, 0o755, 1000, 3820, 10800, 11211, 300000]
+    sidzIgnoreMagicNumbers: [2, 3, 5, 8, 10, 14, 16, 20, 45, 64, 90, 100, 120, 200, 443, 512, 600, 2525, 0o755, 1000, 1024, 3820, 10800, 11211, 300000]
     # larastan
     larastanStrictRules:
         noFacade: false
@@ -201,7 +201,7 @@ parameters:
 #        - identifier: shipmonk.deadProperty.neverWritten
         - identifier: shipmonk.forbiddenCast
 #        - identifier: shipmonk.iteratorToArrayWithoutPreserveKeys
-#        - identifier: shipmonk.publicPropertyNotReadonly
+        - identifier: shipmonk.publicPropertyNotReadonly
         - identifier: shipmonk.unusedParameter
         - identifier: shipmonk.variableTypeOverwritten
 #        - identifier: symplify.commandHasAsCommandAttribute
@@ -211,7 +211,7 @@ parameters:
 #        - identifier: symplify.forbiddenNode
 #        - identifier: symplify.forbiddenStaticClassConstFetch
         - identifier: symplify.forbiddenTrait
-#        - identifier: symplify.noDynamicName
+        - identifier: symplify.noDynamicName
         - identifier: symplify.requireAttributeName
 #        - identifier: symplify.requireExceptionNamespace
 
@@ -229,7 +229,7 @@ parameters:
 #        - identifier: public.property.unused
         - identifier: return.type
         - identifier: staticMethod.dynamicCall
-#        - identifier: staticMethod.dynamicName
+        - identifier: staticMethod.dynamicName
 #        - identifier: trait.unused
         - message: '#^Unable to resolve the template type (TKey|TValue|TObject) in call to function (collect|classes)$#'
 #        -
@@ -258,6 +258,10 @@ parameters:
                 - parameter.trait
                 - property.trait
             path: app/Support/Attribute/Mixin.php
+        -
+            message: '#^Call to an undefined (?:static )?method object::(?:extendMethod|name|message|passes)\(\)\.$#'
+            paths:
+                - bootstrap/app.php
 #        -
 #            message: '#^Cannot access property \$(id|Value) on mixed\.$#'
 #            paths:
@@ -278,22 +282,22 @@ parameters:
             identifier: new.static
             paths:
                 - app/Models/AbstractModel.php
-#                - app/Rules/AbstractRule.php
+                - app/Rules/AbstractRule.php
         -
             identifier: assign.propertyType
             paths:
                 - app/Console/Commands/CheckServiceProviderCommand.php
-#                - app/Rules/DefaultRule.php
-#        -
-#            identifier: method.childParameterType
-#            paths:
-#                - app/Rules/Concerns/DataAware.php
-#        -
-#            identifier: return.deprecatedInterface
-#            paths:
+                - app/Rules/DefaultRule.php
+        -
+            identifier: method.childParameterType
+            paths:
+                - app/Rules/Concerns/DataAware.php
+        -
+            identifier: return.deprecatedInterface
+            paths:
 #                - app/Http/Requests/FormRequest.php
-#                - app/Rules/AbstractProxyRule.php
-#                - app/Rules/MaxUploadSizeRule.php
+                - app/Rules/AbstractProxyRule.php
+                - app/Rules/MaxUploadSizeRule.php
 #                - app/Support/Client/AbstractClient.php
 #        -
 #            identifier: complexity.classLike

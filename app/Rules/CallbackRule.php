@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
+
+namespace App\Rules;
+
+final class CallbackRule extends AbstractRule
+{
+    /** @var array<int|string, mixed> */
+    private array $callbackArgs;
+
+    /**
+     * @param callable|string $callback
+     * @param int|numeric-string $idxOfAttrValInCallbackArgs
+     */
+    public function __construct(
+        private readonly mixed $callback,
+        private int|string $idxOfAttrValInCallbackArgs = 0,
+        mixed ...$callbackArgs
+    ) {
+        $this->idxOfAttrValInCallbackArgs = (int) $this->idxOfAttrValInCallbackArgs;
+        $this->callbackArgs = $callbackArgs;
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    #[\Override]
+    public function passes(string $attribute, mixed $value): bool
+    {
+        array_splice($this->callbackArgs, $this->idxOfAttrValInCallbackArgs, 0, $value);
+
+        return (bool) \call_user_func_array(resolve_callback($this->callback), $this->callbackArgs);
+    }
+}

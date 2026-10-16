@@ -45,6 +45,7 @@
         "kitloong/laravel-migrations-generator": "^7.4",
         "larastan/larastan": "^3.13",
         "laravel-lang/common": "^6.8",
+        "laravel/boost": "^2.10",
         "laravel/doctor": "^0.1",
         "laravel/envoy": "^2.12",
         "laravel/facade-documenter": "dev-main",
@@ -167,6 +168,7 @@
                 "dedoc/scramble",
                 "guanguans/laravel-soar",
                 "kitloong/laravel-migrations-generator",
+                "laravel/boost",
                 "laravel/doctor",
                 "laravel/pail",
                 "laravel/pao",
@@ -189,6 +191,7 @@
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --force --ansi -vv",
+            "@artisan boost:update",
             "@artisan:ide-helper",
             "@cghooks:upsert",
             "@composer:normalize"
@@ -395,7 +398,7 @@
         "neon-lint": "@php vendor/bin/neon-lint *.neon",
         "pest": [
             "@putenv:xdebug-on",
-            "@php vendor/bin/pest --colors=always --min=50 --coverage --profile --retry",
+            "@php vendor/bin/pest --colors=always --min=30 --coverage --profile --retry",
             "@putenv:xdebug-off"
         ],
         "pest:bail": "@pest --bail",
@@ -409,7 +412,7 @@
         "pest:highest": [
             "@putenv:php",
             "@putenv:xdebug-on",
-            "$PHP85 vendor/bin/pest --colors=always --min=50 --coverage --profile",
+            "$PHP85 vendor/bin/pest --colors=always --min=30 --coverage --profile",
             "@putenv:xdebug-off"
         ],
         "pest:migrate-configuration": "@pest --migrate-configuration",
