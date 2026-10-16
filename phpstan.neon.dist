@@ -76,7 +76,7 @@ parameters:
         exceptionMustImplementNativeThrowable:
             nativeThrowable: App\Contracts\Throwable
     sidzIgnoreNumericStrings: true
-    sidzIgnoreMagicNumbers: [2, 3, 10, 14, 16, 20, 45, 90, 100, 120, 443, 512, 600, 2525, 0o755, 1000, 3820, 10800, 11211, 300000]
+    sidzIgnoreMagicNumbers: [2, 3, 10, 14, 16, 20, 45, 64, 90, 100, 120, 200, 443, 512, 600, 2525, 0o755, 1000, 3820, 10800, 11211, 300000]
     # larastan
     larastanStrictRules:
         noFacade: false
@@ -240,7 +240,7 @@ parameters:
         -
             identifiers:
                 - arguments.count
-#                - booleanAnd.alwaysFalse
+                - booleanAnd.alwaysFalse
                 - function.impossibleType
                 - instanceof.alwaysFalse
 #                - method.protected
@@ -310,11 +310,11 @@ parameters:
                 - bootstrap/app.php
                 - config/app.php
                 - config/database.php
-#        -
-#            identifier: binaryOp.invalid
-#            paths:
+        -
+            identifier: binaryOp.invalid
+            paths:
 #                - app/Providers/HttpServiceProvider.php
-#                - app/Support/Mixin/SchedulingEventMixin.php
+                - app/Support/Mixin/SchedulingEventMixin.php
 #        -
 #            identifier: staticMethod.void
 #            path: app/Http/Requests/FormRequest.php
@@ -326,12 +326,12 @@ parameters:
 #        -
 #            message: '#^Calling env_explode\(\) is forbidden, use config\(\) instead\.$#'
 #            path: config/
-#        -
-#            message: '#^Call to method App\\Support\\Mixin\\SchedulingEventMixin\:\:dumpExpression\(\) on a separate line has no effect\.$#'
-#            path: app/Support/Mixin/SchedulingEventMixin.php
-#        -
-#            message: '#^Null value involved in string interpolation with \$suffix$#'
-#            path: app/Support/Mixin/SchedulingEventMixin.php
+        -
+            message: '#^Call to method App\\Support\\Mixin\\SchedulingEventMixin\:\:dumpExpression\(\) on a separate line has no effect\.$#'
+            path: app/Support/Mixin/SchedulingEventMixin.php
+        -
+            message: '#^Null value involved in string interpolation with \$suffix$#'
+            path: app/Support/Mixin/SchedulingEventMixin.php
 
 
 

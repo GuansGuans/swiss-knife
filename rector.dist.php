@@ -19,6 +19,7 @@ use Guanguans\PhpCsFixerCustomFixers\Support\Utils;
 use Guanguans\RectorRules\Rector\Array_\SortListItemOfSameScalarTypeRector;
 use Guanguans\RectorRules\Rector\File\AddNoinspectionDocblockToFileFirstStmtRector;
 use Guanguans\RectorRules\Rector\Name\RenameToConventionalCaseNameRector;
+use Guanguans\RectorRules\Rector\Scalar\StringToClassConstantOfRequestOptionsRector;
 use Guanguans\RectorRules\Set\SetList;
 use Pest\Rector\Rules\ChainExpectCallsRector;
 use Pest\Rector\Set\PestSetList;
@@ -36,6 +37,7 @@ use Rector\ValueObject\PhpVersion;
 use RectorLaravel\Rector\ArrayDimFetch\ArrayToArrGetRector;
 use RectorLaravel\Rector\Empty_\EmptyToBlankAndFilledFuncRector;
 use RectorLaravel\Rector\FuncCall\HelperFuncCallToFacadeClassRector;
+use RectorLaravel\Rector\FuncCall\RemoveDumpDataDeadCodeRector;
 use RectorLaravel\Rector\If_\ThrowIfRector;
 use RectorLaravel\Rector\MethodCall\ValidationRuleArrayStringValueToArrayRector;
 use RectorLaravel\Rector\StaticCall\DispatchToHelperFunctionsRector;
@@ -73,6 +75,9 @@ return RectorConfig::configure()
         RemoveDeadInstanceOfAssertRector::class => [
             __DIR__.'/bootstrap/app.php',
         ],
+        RemoveDumpDataDeadCodeRector::class => [
+            __DIR__.'/app/Support/Mixin/SchedulingEventMixin.php',
+        ],
         RemoveExtraParametersRector::class => [
             __DIR__.'/app/Support/Mixin/',
         ],
@@ -92,6 +97,9 @@ return RectorConfig::configure()
         StringClassNameToClassConstantRector::class => [
             __DIR__.'/bootstrap/app.php',
             __DIR__.'/tests/Arch/',
+        ],
+        StringToClassConstantOfRequestOptionsRector::class => [
+            __DIR__.'/config/telescope.php',
         ],
     ])
     ->withCache(__DIR__.'/.build/rector/')

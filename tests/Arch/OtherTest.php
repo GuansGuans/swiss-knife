@@ -20,21 +20,6 @@ declare(strict_types=1);
  * @see https://github.com/GuansGuans/swiss-knife
  */
 
-use App\Console\Commands\AbstractCommand;
-use App\Listeners\ContextSubscriber;
-use App\Models\AbstractModel;
-use App\Support\ComposerScripts;
-
-arch()
-    ->group(__DIR__, __FILE__)
-    ->skip()
-    ->preset()->laravel()->ignoring([
-        AbstractCommand::class,
-        AbstractModel::class,
-        ComposerScripts::class,
-        ContextSubscriber::class,
-    ]);
-
 arch()
     ->group(__DIR__, __FILE__)
     // ->skip()

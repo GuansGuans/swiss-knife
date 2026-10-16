@@ -43,9 +43,7 @@ it('is route naming', function (): void {
         // ->dd()
         // ->whereNotNull('name')
         ->whereNotInStrict('name', [])
-        ->whereNotInStrict('uri', [
-            'api/users.json',
-        ])
+        ->whereNotInStrict('uri', [])
         ->each(function (array $route): void {
             expect($route['name'])->not->toBeNull("The route [{$route['method']} {$route['uri']}] name should not be null.");
 

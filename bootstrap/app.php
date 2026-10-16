@@ -23,7 +23,7 @@ use App\Support\VarDumper\ServerDumper;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\CarbonInterval;
-use Guanguans\LaravelSoar\SoarServiceProvider;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Database\Eloquent\Model;
@@ -58,6 +58,7 @@ use Illuminate\Support\Str;
 use Laravel\Doctor\Diagnostics\ComposerAuditPasses;
 use Laravel\Doctor\Diagnostics\ComposerAutoloadIsValid;
 use Pdo\Mysql;
+use function Illuminate\Support\php_binary;
 
 \defined('TRACE_ID') or \define('TRACE_ID', (string) Str::uuid7());
 
@@ -82,7 +83,15 @@ return Application::configure(\dirname(__DIR__))
     })
     ->registered(static function (Application $application): void {
         if ($application->isLocal()) {
-            $application->register(SoarServiceProvider::class);
+            foreach (
+                [
+                    'App\\Providers\\TelescopeServiceProvider',
+                    'Guanguans\\LaravelSoar\\SoarServiceProvider',
+                    'Laravel\\Telescope\\TelescopeServiceProvider',
+                ] as $provider
+            ) {
+                $application->register($provider);
+            }
         }
 
         if (!$application->isProduction()) {
@@ -90,12 +99,12 @@ return Application::configure(\dirname(__DIR__))
                 [
                     'Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider',
                     'Dedoc\\Scramble\\ScrambleServiceProvider',
-                    'Guanguans\\LaravelSoar\\SoarServiceProvider',
+                    // 'Guanguans\\LaravelSoar\\SoarServiceProvider',
                     'KitLoong\\MigrationsGenerator\\MigrationsGeneratorServiceProvider',
                     'Laravel\\Doctor\\DoctorServiceProvider',
                     'Laravel\\Pail\\PailServiceProvider',
                     'Laravel\\Pao\\Laravel\\ServiceProvider',
-                    'Laravel\\Telescope\\TelescopeServiceProvider',
+                    // 'Laravel\\Telescope\\TelescopeServiceProvider',
                     'Msamgan\\LaravelEnvKeysChecker\\LaravelEnvKeysCheckerServiceProvider',
                     'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
                     'Orangehill\\Iseed\\IseedServiceProvider',
@@ -199,6 +208,7 @@ return Application::configure(\dirname(__DIR__))
         Date::use(CarbonImmutable::class);
         Date::useCallable(
             static fn (mixed $result): mixed => $result instanceof CarbonInterface
+                // ? $result->inAppTimezone()
                 ? $result->setTimezone(Config::string('app.timezone'))
                 : $result
         );
@@ -365,6 +375,11 @@ return Application::configure(\dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withSchedule(static function (Schedule $schedule): void {
+        // $schedule->command('inspire')->daily()/* ->atRandom('07:15', '11:42') */ /* ->doNotMonitor() */ /* ->ddExpression() */ ->dailyAppendOutputTo()->runInBackground()->withoutOverlapping(60);
+        $schedule->command('telescope:prune')->everyThirtyMinutes()->skip(app()->isProduction())->dailyAppendOutputTo()->withoutOverlapping();
+        // $schedule->exec(php_binary(), ['-v'])->everyMinute()->dailyAppendOutputTo();
+    })
     ->withMiddleware(static function (Middleware $middleware): void {})
     ->withExceptions(static function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

@@ -30,22 +30,48 @@ return (new Configuration)
         __DIR__.'/app/Support/ComposerScripts.php',
         __DIR__.'/app/Support/Rector/',
     ])
-    ->ignoreErrors([ErrorType::SHADOW_DEPENDENCY])
+    ->ignoreErrorsOnExtensions(
+        /** @see \ShipMonk\ComposerDependencyAnalyser\Analyser::CORE_EXTENSIONS */
+        ['ext-pdo', 'ext-pdo_mysql'],
+        [ErrorType::SHADOW_DEPENDENCY],
+    )
+    ->ignoreErrorsOnPackages(
+        [
+            /** @see vendor/laravel/framework/composer.json */
+            'composer/xdebug-handler',
+            'monolog/monolog',
+            'nesbot/carbon',
+            'symfony/console',
+            'symfony/process',
+            'symfony/var-dumper',
+        ],
+        [ErrorType::SHADOW_DEPENDENCY]
+    )
     ->ignoreErrorsOnPackages(
         [
             'chrome-php/chrome',
             'guanguans/laravel-exception-notify',
             'laravel/tinker',
             'opcodesio/log-viewer',
+            'skywarth/chaotic-schedule',
             'spatie/laravel-activitylog',
             'spatie/laravel-backup',
             'swiss-devjoy/laravel-optimize-sqlite',
         ],
         [ErrorType::UNUSED_DEPENDENCY]
     )
-    ->ignoreErrorsOnPaths(
+    ->ignoreErrorsOnPackageAndPaths(
+        'laravel/doctor',
         [
             __DIR__.'/bootstrap/app.php',
+        ],
+        [ErrorType::DEV_DEPENDENCY_IN_PROD]
+    )
+    ->ignoreErrorsOnPackageAndPaths(
+        'laravel/telescope',
+        [
+            __DIR__.'/app/Providers/TelescopeServiceProvider.php',
+            __DIR__.'/config/telescope.php',
         ],
         [ErrorType::DEV_DEPENDENCY_IN_PROD]
     );
