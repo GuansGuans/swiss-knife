@@ -18,6 +18,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Env;
 use Symfony\Component\VarDumper\VarDumper;
+use function Illuminate\Filesystem\join_paths;
 
 if (!\function_exists('classes')) {
     /**
@@ -103,7 +104,7 @@ if (!\function_exists('classes')) {
             ->filter(static fn (string $file, string $class): bool => $filter($class, $file))
             ->mapWithKeys(static function (string $file, string $class) use (&$context, $errorMessenger): array {
                 try {
-                    $context = ['file' => $file, 'class' => $class, 'line' => __LINE__ + 2];
+                    $context = ['class' => $class, 'file' => $file, 'line' => __LINE__ + 2];
 
                     return [$class => new ReflectionClass($class)];
                 } catch (Throwable $throwable) {
@@ -226,6 +227,13 @@ if (!\function_exists('make')) {
     }
 }
 
+if (!\function_exists('net_ease_cloud_music_path')) {
+    function net_ease_cloud_music_path(string $path = ''): string
+    {
+        return join_paths(storage_path(join_paths('app', 'net-ease-cloud-music')), $path);
+    }
+}
+
 if (!\function_exists('resolve_callback')) {
     /**
      * @see https://github.com/PHP-DI/Invoker/blob/master/src/CallableResolver.php
@@ -262,6 +270,13 @@ if (!\function_exists('resolve_callback')) {
                 $throwable
             );
         }
+    }
+}
+
+if (!\function_exists('running_in_github_action')) {
+    function running_in_github_action(): bool
+    {
+        return 'true' === getenv('GITHUB_ACTIONS');
     }
 }
 

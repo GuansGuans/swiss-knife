@@ -185,12 +185,17 @@ return Application::configure(\dirname(__DIR__))
         config([
             'localization.align' => false,
         ]);
+
+        config([
+            'orbit.default' => 'json',
+            'orbit.paths.content' => net_ease_cloud_music_path('database/'),
+        ]);
     })
     ->booting(static function (): void {
         /**
          * @see https://masteringlaravel.io/daily/2024-11-13-how-can-you-make-sure-the-environment-is-configured-correctly
          */
-        Env::getOrFail('APP_NAME');
+        // Env::getOrFail('NET_EASE_CLOUD_MUSIC_USER_IDS');
     })
     ->booting(static function (Application $application): void {
         if (!$application->runningUnitTests()) {

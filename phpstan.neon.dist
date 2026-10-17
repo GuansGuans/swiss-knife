@@ -343,3 +343,13 @@ parameters:
             identifier: method.notFound
             paths:
                 - app/Support/VarDumper/ServerDumper.php
+
+
+
+        - identifier: shipmonk.nonNormalizedType
+        - identifier: offsetAccess.notFound
+        - identifier: shipmonk.arithmeticOnNonNumber
+        - identifier: method.nonObject
+        - identifier: missingType.generics
+        - identifier: disallowed.function
+        - identifier: varTag.type

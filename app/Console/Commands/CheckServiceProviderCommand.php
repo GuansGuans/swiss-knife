@@ -107,7 +107,9 @@ final class CheckServiceProviderCommand extends AbstractCommand
     protected function rules(): array
     {
         return [
-            'except' => 'array',
+            'except' => 'list',
+            'except.*' => 'required|string',
+            'ignore-indirect' => 'boolean',
         ];
     }
 }

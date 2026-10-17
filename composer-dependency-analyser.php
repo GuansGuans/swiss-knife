@@ -36,12 +36,14 @@ return (new Configuration)
         [ErrorType::SHADOW_DEPENDENCY],
     )
     ->ignoreErrorsOnPackages(
+        /** @see vendor/laravel/framework/composer.json */
         [
-            /** @see vendor/laravel/framework/composer.json */
             'composer/xdebug-handler',
             'monolog/monolog',
             'nesbot/carbon',
+            'spatie/image-optimizer',
             'symfony/console',
+            'symfony/finder',
             'symfony/process',
             'symfony/var-dumper',
         ],
@@ -55,6 +57,7 @@ return (new Configuration)
             'skywarth/chaotic-schedule',
             'spatie/laravel-activitylog',
             'spatie/laravel-backup',
+            'spatie/laravel-image-optimizer',
             'swiss-devjoy/laravel-optimize-sqlite',
         ],
         [ErrorType::UNUSED_DEPENDENCY]

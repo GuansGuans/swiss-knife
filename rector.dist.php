@@ -90,13 +90,11 @@ return RectorConfig::configure()
             __DIR__.'/app/Models/',
         ],
         SortAssociativeArrayByKeyRector::class => [
-            __DIR__.'/app/',
+            __DIR__.'/app/Console/Commands/NetEaseCloudMusicCommand.php',
             __DIR__.'/bootstrap/app.php',
             __DIR__.'/config/',
-            __DIR__.'/database/',
         ],
         SortListItemOfSameScalarTypeRector::class => [
-            __DIR__.'/app/Console/Commands/NetEaseCloudMusicCommand.php',
             __DIR__.'/config/',
             __DIR__.'/database/migrations/',
         ],

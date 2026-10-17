@@ -181,7 +181,7 @@ function reset_http_fake(?Factory $factory = null): void
     (fn (): Collection => $this->stubCallbacks = collect())->call($factory ?? Http::getFacadeRoot());
 }
 
-function running_in_github_action(): bool
-{
-    return 'true' === getenv('GITHUB_ACTIONS');
-}
+// function running_in_github_action(): bool
+// {
+//     return 'true' === getenv('GITHUB_ACTIONS');
+// }
