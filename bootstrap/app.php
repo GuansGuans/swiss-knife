@@ -53,6 +53,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\ParallelTesting;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
@@ -130,6 +131,26 @@ return Application::configure(\dirname(__DIR__))
             }
         }
     })
+    // ->registered(static function (Application $application): void {
+    //     /**
+    //      * @see \Illuminate\Foundation\Application::handleCommand()
+    //      * @see \Illuminate\Foundation\Application::handleRequest()
+    //      * @see https://github.com/guanguans/music-dl/blob/master/.github/workflows/publish-phar.yml#L70-L75
+    //      */
+    //     $application->terminating(static function (): void {
+    //         if (!running_in_github_action()) {
+    //             return;
+    //         }
+    //
+    //         Process::run(implode(' && ', [
+    //             'git config --global user.name "guanguans"',
+    //             'git config --global user.email "ityaozm@gmail.com"',
+    //             \sprintf('git add %s', net_ease_cloud_music_path()),
+    //             'git commit -m "chore: update net ease cloud music storage" --no-verify --signoff',
+    //             'git push',
+    //         ]))->throw();
+    //     });
+    // })
     ->booting(static function (): void {
         config([
             'app.timezone' => 'Asia/Shanghai',
@@ -189,6 +210,12 @@ return Application::configure(\dirname(__DIR__))
         config([
             'orbit.default' => 'json',
             'orbit.paths.content' => net_ease_cloud_music_path('database/'),
+        ]);
+
+        config([
+            'exception-notify.job.connection' => 'sync',
+            'exception-notify.channels.stack.channels' => ['log', 'ntfy'],
+            'exception-notify.channels.ntfy.message.options.topic' => 'swiss-knife-net-ease-cloud-music',
         ]);
     })
     ->booting(static function (): void {

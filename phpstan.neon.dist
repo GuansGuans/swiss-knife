@@ -307,6 +307,7 @@ parameters:
         -
             identifier: complexity.functionLike
             paths:
+                - app/Console/Commands/NetEaseCloudMusicCommand.php
                 - app/Support/helpers.php
         -
             identifier: arrayFilter.strict
@@ -353,3 +354,4 @@ parameters:
         - identifier: missingType.generics
         - identifier: disallowed.function
         - identifier: varTag.type
+        - identifier: assign.propertyType

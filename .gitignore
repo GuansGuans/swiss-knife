@@ -57,6 +57,6 @@ rr
 
 .mcp.json
 AGENTS.md
-boost.json
+#boost.json
 CLAUDE.md
 opencode.json

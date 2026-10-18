@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Schema\Blueprint;
 use Orbit\Concerns\Orbital;
 use Orbit\Concerns\SoftDeletes;
+use Spatie\SchemalessAttributes\Casts\SchemalessAttributes;
 
 #[\Illuminate\Database\Eloquent\Attributes\Fillable([
     'event_count',
@@ -34,6 +35,24 @@ final class NetEaseCloudMusicUserHomeLog extends AbstractModel
     use SoftDeletes;
 
     /**
+     * Orbit 在 bootOrbital() 迁移时用 newInstanceWithoutConstructor() 创建模型，跳过了初始化钩子，
+     * 所以需要在这里手动设置 $casts 属性，不能用 casts() 方法，因为 casts() 方法在 bootOrbital() 迁移时不会被调用。
+     *
+     * @see \Orbit\Concerns\Orbital::bootOrbital()
+     * @see \Illuminate\Database\Eloquent\Concerns\HasAttributes::initializeHasAttributes()
+     * @see \App\Models\Concerns\HasSchemalessAttributes::initializeHasSchemalessAttributes()
+     */
+    #[\Override]
+    protected $casts = [
+        'event_count' => 'integer',
+        'extra_attributes' => SchemalessAttributes::class,
+        'fan_count' => 'integer',
+        'follow_count' => 'integer',
+        'level' => 'integer',
+        'user_id' => 'integer',
+    ];
+
+    /**
      * @noinspection OverrideMissingInspection
      */
     public static function schema(Blueprint $table): void
@@ -47,17 +66,5 @@ final class NetEaseCloudMusicUserHomeLog extends AbstractModel
         $table->unsignedInteger('fan_count');
         $table->string('screenshot_path');
         $table->schemalessAttributes('extra_attributes');
-    }
-
-    #[\Override]
-    protected function casts(): array
-    {
-        return [
-            'event_count' => 'integer',
-            'fan_count' => 'integer',
-            'follow_count' => 'integer',
-            'level' => 'integer',
-            'user_id' => 'integer',
-        ];
     }
 }

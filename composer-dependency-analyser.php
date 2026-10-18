@@ -51,7 +51,6 @@ return (new Configuration)
     )
     ->ignoreErrorsOnPackages(
         [
-            'guanguans/laravel-exception-notify',
             'laravel/tinker',
             'opcodesio/log-viewer',
             'skywarth/chaotic-schedule',

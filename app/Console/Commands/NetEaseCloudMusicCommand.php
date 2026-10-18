@@ -15,13 +15,16 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\NetEaseCloudMusicUserHomeLog;
+use Guanguans\LaravelExceptionNotify\Facades\ExceptionNotify;
 use HeadlessChromium\Browser\ProcessAwareBrowser;
 use HeadlessChromium\BrowserFactory;
 use HeadlessChromium\Cookies\Cookie;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
+use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -34,6 +37,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 final class NetEaseCloudMusicCommand extends AbstractCommand
 {
+    private const int PRETTY_JSON_OPTIONS = \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES;
+    private const int WAIT_DURATION = 3;
     private const string LOGIN_URL = 'https://music.163.com/#/login';
     private const string USER_HOME_URL_TEMPLATE = 'https://music.163.com/#/user/home?id=%s';
     private ProcessAwareBrowser $processAwareBrowser;
@@ -79,11 +84,11 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 /** @var \HeadlessChromium\Page $page */
                 $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId));
                 $page->waitUntilContainsElement('#g_iframe');
-                Sleep::sleep(3);
+                Sleep::sleep(self::WAIT_DURATION);
 
                 $page->screenshot()->saveToFile(net_ease_cloud_music_path($screenshotPath = \sprintf(
                     "user-id-$userId/home-%s.png",
-                    now()->format('Y-m-d-H-i-s')
+                    now()->format('YmdHis')
                 )));
 
                 return collect([
@@ -92,56 +97,110 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                     'event_count' => '#event_count',
                     'follow_count' => '#follow_count',
                     'fan_count' => '#fan_count',
-                ])
-                    ->map(
-                        static fn (string $selector): ?string => $page
-                            ->evaluate("document.querySelector('#g_iframe')?.contentDocument?.querySelector('#head-box $selector')?.textContent?.trim() ?? null")
-                            ->getReturnValue()
-                    )
-                    ->put('user_id', $userId)
-                    ->put('screenshot_path', $screenshotPath)
-                    ->sortKeysUsing(
-                        static fn (string $a, string $b): int => (int) array_search(
-                            $a,
-                            $sorted = [
-                                /** @see \Guanguans\RectorRules\Rector\Array_\SortListItemOfSameScalarTypeRector */
-                                'user_id',
-                                'level',
-                                'event_count',
-                                'fan_count',
-                                'follow_count',
-                                'screenshot_path',
-                                'name',
-                            ],
-                            true
-                        ) <=> (int) array_search($b, $sorted, true)
-                    )
-                    ->all();
+                ])->map(
+                    static fn (string $selector): ?string => $page
+                        ->evaluate("document.querySelector('#g_iframe')?.contentDocument?.querySelector('#head-box $selector')?.textContent?.trim() ?? null")
+                        ->getReturnValue()
+                )->put('user_id', $userId)->put('screenshot_path', $screenshotPath)->all();
+            })
+            ->tap(function (Collection $data): void {
+                $data = $data->map(
+                    static fn (array $attributes): Collection => collect($attributes)
+                        ->except('screenshot_path')
+                        ->sortKeysUsing(
+                            static fn (string $a, string $b): int => (int) array_search(
+                                $a,
+                                $sortedAttributes = [
+                                    /** @see SortListItemOfSameScalarTypeRector */
+                                    'user_id',
+                                    'level',
+                                    'event_count',
+                                    'fan_count',
+                                    'follow_count',
+                                    'name',
+                                ],
+                                true
+                            ) <=> (int) array_search($b, $sortedAttributes, true)
+                        )
+                        ->mapWithKeys(static fn (mixed $value, string $key): array => [Str::headline($key) => $value])
+                );
+
+                $this->output->section('NetEase Cloud Music user home logs crawled.');
+                $this->table($data->first()->keys()->all(), $data);
+            })
+            ->tap(function (Collection $data): void {
+                $this->output->section('NetEase Cloud Music user home logs created.');
+                $this->info(
+                    $data
+                        ->map(
+                            static fn (array $attributes): NetEaseCloudMusicUserHomeLog => NetEaseCloudMusicUserHomeLog::query()
+                                ->create($attributes)
+                        )
+                        ->toPrettyJson(self::PRETTY_JSON_OPTIONS)
+                );
             })
             ->tap(function (Collection $data): void {
                 $data
-                    ->tap(function (Collection $data): void {
-                        $this->table(
-                            collect($data->first())->keys()->map(static fn (string $key) => str($key)->headline())->all(),
-                            $data
-                        );
-                    })
-                    ->tap(static function (Collection $data): void {
-                        $data->each(static function (array $item): void {
-                            NetEaseCloudMusicUserHomeLog::query()->create($item);
-                        });
-                    })
-                    ->tap(static function (Collection $data): void {
-                        NetEaseCloudMusicUserHomeLog::query()
-                            ->latest()
-                            ->limit($data->count())
-                            ->get()
-                            ->map(static fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog): array => $netEaseCloudMusicUserHomeLog->toArray())
-                            ->dump();
+                    ->pluck('user_id')
+                    ->reduce(
+                        function (Collection $carry, int $userId): Collection {
+                            $logs = NetEaseCloudMusicUserHomeLog::query()->where('user_id', $userId)->latest()->limit($limit = 2)->get();
 
-                        // notice.
-                        // optimize image
+                            if ($logs->count() !== $limit) {
+                                return $carry;
+                            }
+
+                            $diffedAttributes = ['event_count', 'fan_count', 'follow_count', 'level', 'name'];
+                            $this->output->isDebug() and $diffedAttributes[] = 'screenshot_path';
+                            $diff = collect($logs->first()?->only($diffedAttributes))->diffAssoc($logs->last()?->only($diffedAttributes));
+
+                            if ($diff->isEmpty()) {
+                                return $carry;
+                            }
+
+                            return $carry->push(
+                                $logs
+                                    ->map(static fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) => tap(
+                                        $netEaseCloudMusicUserHomeLog,
+                                        static function (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) use ($logs, $diff): void {
+                                            $netEaseCloudMusicUserHomeLog->extra_attributes = $logs->map(
+                                                static fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) => $netEaseCloudMusicUserHomeLog
+                                                    ->only($diff->keys()->unshift('id')->all())
+                                            );
+                                            $netEaseCloudMusicUserHomeLog->update();
+                                        }
+                                    ))
+                                    ->first()
+                            );
+                        },
+                        collect()
+                    )
+                    ?->whenNotEmpty(function (Collection $logs): void {
+                        $title = 'NetEase Cloud Music user home logs changed.';
+                        $content = $logs->toPrettyJson(self::PRETTY_JSON_OPTIONS);
+
+                        $this->output->section($title);
+                        $this->info($content);
+
+                        config(['exception-notify.title' => $title]);
+                        ExceptionNotify::reportContent($content);
                     });
+            })
+            ->tap(static function (Collection $data): void {
+                // optimize image
+            })
+            ->tap(static function (): void {
+                if (!running_in_github_action()) {
+                    return;
+                }
+
+                Process::run(implode(' && ', [
+                    'git config --global user.name "guanguans"',
+                    'git config --global user.email "ityaozm@gmail.com"',
+                    \sprintf('git add --force %s', net_ease_cloud_music_path()),
+                    'git commit --message "chore: update net ease cloud music storage" --no-verify --signoff',
+                    'git push',
+                ]))->throw();
             });
     }
 
@@ -161,10 +220,11 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         );
 
         $this->processAwareBrowser = (new BrowserFactory)->createBrowser([
-            'headless' => $headless = (!$this->output->isDebug() && !$this->option('xdebug')),
+            // 'headless' => $headless = (!$this->output->isDebug() && !$this->option('xdebug')),
+            'headless' => $headless = !$this->output->isDebug(),
             'debugLogger' => $headless ? Log::channel('null') : $this->consoleLogger(),
             'windowSize' => [
-                /** @see \Guanguans\RectorRules\Rector\Array_\SortListItemOfSameScalarTypeRector */
+                /** @see SortListItemOfSameScalarTypeRector */
                 1920,
                 1080,
             ],
