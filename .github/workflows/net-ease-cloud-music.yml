@@ -49,7 +49,10 @@ jobs:
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v2
         with:
-          chrome-version: stable
+          # https://github.com/browser-actions/setup-chrome#supported-version-formats
+          chrome-version: 120
+          # chrome-version: latest
+          # chrome-version: stable
 
       - name: Run net-ease-cloud-music
         run: |

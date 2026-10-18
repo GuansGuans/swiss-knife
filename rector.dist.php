@@ -91,7 +91,7 @@ return RectorConfig::configure()
             '*Abstract*.php',
         ],
         RenameToConventionalCaseNameRector::class => [
-            __DIR__.'/app/Models/',
+            // __DIR__.'/app/Models/',
         ],
         SortAssociativeArrayByKeyRector::class => [
             __DIR__.'/app/Console/Commands/NetEaseCloudMusicCommand.php',

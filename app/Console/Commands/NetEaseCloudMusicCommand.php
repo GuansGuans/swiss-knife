@@ -18,7 +18,7 @@ use App\Models\NetEaseCloudMusicUserHomeLog;
 use Guanguans\LaravelExceptionNotify\Facades\ExceptionNotify;
 use HeadlessChromium\Browser\ProcessAwareBrowser;
 use HeadlessChromium\BrowserFactory;
-use HeadlessChromium\Cookies\Cookie;
+use HeadlessChromium\Cookies\CookiesCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -37,9 +37,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 final class NetEaseCloudMusicCommand extends AbstractCommand
 {
-    private const int PRETTY_JSON_OPTIONS = \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES;
+    public const int PRETTY_JSON_OPTIONS = \JSON_PRETTY_PRINT | \JSON_UNESCAPED_LINE_TERMINATORS | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE;
     private const int WAIT_DURATION = 3;
-    private const string LOGIN_URL = 'https://music.163.com/#/login';
+
+    // private const string LOGIN_URL = 'https://music.163.com/#/login';
     private const string USER_HOME_URL_TEMPLATE = 'https://music.163.com/#/user/home?id=%s';
     private ProcessAwareBrowser $processAwareBrowser;
 
@@ -72,13 +73,8 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         collect($this->option('user-id'))
             ->tap(function () use (&$page): void {
                 $page = $this->processAwareBrowser->createPage();
-                $page
-                    ->setCookies(array_map(
-                        static fn (array $cookie): Cookie => new Cookie($cookie),
-                        File::json(net_ease_cloud_music_path('cookie.json'))
-                    ))
-                    ->await();
-                $page->navigate(self::LOGIN_URL)->waitForNavigation();
+                $page->setCookies(new CookiesCollection(File::json(net_ease_cloud_music_path('cookie.json'))))->await();
+                // $page->navigate(self::LOGIN_URL)->waitForNavigation();
             })
             ->map(static function (int $userId) use ($page): array {
                 /** @var \HeadlessChromium\Page $page */
@@ -115,8 +111,8 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                                     'user_id',
                                     'level',
                                     'event_count',
-                                    'fan_count',
                                     'follow_count',
+                                    'fan_count',
                                     'name',
                                 ],
                                 true
@@ -144,7 +140,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                     ->pluck('user_id')
                     ->reduce(
                         function (Collection $carry, int $userId): Collection {
-                            $logs = NetEaseCloudMusicUserHomeLog::query()->where('user_id', $userId)->latest()->limit($limit = 2)->get();
+                            $logs = NetEaseCloudMusicUserHomeLog::query()->where('user_id', $userId)->latest('id')->limit($limit = 2)->get();
 
                             if ($logs->count() !== $limit) {
                                 return $carry;
@@ -220,9 +216,8 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         );
 
         $this->processAwareBrowser = (new BrowserFactory)->createBrowser([
-            // 'headless' => $headless = (!$this->output->isDebug() && !$this->option('xdebug')),
-            'headless' => $headless = (\PHP_OS_FAMILY === 'Linux' || !$this->output->isDebug()),
-            'debugLogger' => $headless ? Log::channel('null') : $this->consoleLogger(),
+            'headless' => running_in_github_action() || !$this->output->isDebug(),
+            'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
             'windowSize' => [
                 /** @see SortListItemOfSameScalarTypeRector */
                 1920,

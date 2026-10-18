@@ -16,6 +16,7 @@ declare(strict_types=1);
  * @see https://github.com/GuansGuans/swiss-knife
  */
 
+use App\Console\Commands\NetEaseCloudMusicCommand;
 use App\Listeners\ContextSubscriber;
 use App\Rules\AbstractRule;
 use App\Rules\MaxUploadSizeRule;
@@ -67,6 +68,8 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Validator;
 use Laravel\Doctor\Diagnostics\ComposerAuditPasses;
 use Laravel\Doctor\Diagnostics\ComposerAutoloadIsValid;
+use Orbit\Drivers\Json as JsonDriver;
+use Orbit\Facades\Orbit;
 use Pdo\Mysql;
 use function Illuminate\Filesystem\join_paths;
 use function Illuminate\Support\php_binary;
@@ -207,6 +210,20 @@ return Application::configure(\dirname(__DIR__))
             'localization.align' => false,
         ]);
 
+        Orbit::extend('json', static fn (): JsonDriver => new class extends JsonDriver {
+            /**
+             * @noinspection MissingParentCallInspection
+             * @noinspection KeysFragmentationWithArrayFunctionsInspection
+             */
+            #[Override]
+            protected function dumpContent(Model $model): string
+            {
+                return json_encode(
+                    array_filter($this->getModelAttributes($model), static fn (mixed $value): bool => null !== $value),
+                    NetEaseCloudMusicCommand::PRETTY_JSON_OPTIONS
+                );
+            }
+        });
         config([
             'orbit.default' => 'json',
             'orbit.paths.content' => net_ease_cloud_music_path('database/'),
