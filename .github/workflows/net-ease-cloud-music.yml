@@ -54,7 +54,7 @@ jobs:
       - name: Run net-ease-cloud-music
         run: |
           chrome --version
-          php artisan net-ease-cloud-music --no-interaction --ansi -v
+          php artisan net-ease-cloud-music --no-interaction --ansi -vvv
 
         # keepalive-schedule-job:
         #   name: Keepalive schedule job

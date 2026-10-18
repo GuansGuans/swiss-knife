@@ -221,7 +221,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
 
         $this->processAwareBrowser = (new BrowserFactory)->createBrowser([
             // 'headless' => $headless = (!$this->output->isDebug() && !$this->option('xdebug')),
-            'headless' => $headless = !$this->output->isDebug(),
+            'headless' => $headless = (\PHP_OS_FAMILY === 'Linux' || !$this->output->isDebug()),
             'debugLogger' => $headless ? Log::channel('null') : $this->consoleLogger(),
             'windowSize' => [
                 /** @see SortListItemOfSameScalarTypeRector */
