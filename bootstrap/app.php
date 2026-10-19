@@ -207,7 +207,7 @@ return Application::configure(\dirname(__DIR__))
         ]);
 
         config([
-            'exception-notify.environments' => ['local', 'production'],
+            'exception-notify.environments' => ['production'],
             'exception-notify.job.connection' => 'sync',
             'exception-notify.channels.stack.channels' => ['log', 'ntfy', 'wPush'],
             'exception-notify.channels.ntfy.message.options.topic' => env(

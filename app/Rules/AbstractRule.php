@@ -35,8 +35,6 @@ abstract class AbstractRule implements ValidationRule
      * @see https://github.com/Wixel/GUMP
      *
      * @param \Closure(string, null|string): \Illuminate\Translation\PotentiallyTranslatedString $fail
-     *
-     * @noinspection RedundantDocCommentTagInspection
      */
     #[\Override]
     final public function validate(string $attribute, mixed $value, \Closure $fail): void

@@ -1,6 +1,8 @@
 <?php
 
+/** @noinspection D */
 /** @noinspection LaravelUnknownConfigKeyInspection */
+/** @noinspection PhpUnusedAliasInspection */
 declare(strict_types=1);
 
 /**
@@ -40,9 +42,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class NetEaseCloudMusicCommand extends AbstractCommand
 {
     public const int PRETTY_JSON_OPTIONS = \JSON_PRETTY_PRINT | \JSON_UNESCAPED_LINE_TERMINATORS | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE;
-    private const int WAIT_DURATION = 3;
 
-    // private const string LOGIN_URL = 'https://music.163.com/#/login';
+    // private const int WAIT_DURATION = 3;
+    private const string LOGIN_URL = 'https://music.163.com/#/login';
     private const string USER_HOME_URL_TEMPLATE = 'https://music.163.com/#/user/home?id=%s';
     private ProcessAwareBrowser $processAwareBrowser;
 
@@ -67,13 +69,13 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 $responseWaiter = $page->setCookies(new CookiesCollection($this->cookies()));
                 \assert($responseWaiter instanceof ResponseWaiter);
                 $responseWaiter->await();
-                // $page->navigate(self::LOGIN_URL)->waitForNavigation();
+                $page->navigate(self::LOGIN_URL)->waitForNavigation();
             })
             ->map(static function (int $userId) use ($page): array {
                 \assert($page instanceof Page);
-                $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId));
-                $page->waitUntilContainsElement('#g_iframe');
-                Sleep::sleep(self::WAIT_DURATION);
+                $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId))->waitForNavigation();
+                // $page->waitUntilContainsElement('#g_iframe');
+                // Sleep::sleep(self::WAIT_DURATION);
 
                 $page->screenshot()->saveToFile(net_ease_cloud_music_path($screenshotPath = \sprintf(
                     "user-id-$userId/home-%s.png",
@@ -101,12 +103,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                                 $a,
                                 $sortedAttributes = [
                                     /** @see SortListItemOfSameScalarTypeRector */
-                                    'user_id',
-                                    'level',
-                                    'event_count',
-                                    'follow_count',
-                                    'fan_count',
-                                    'name',
+                                    'user_id', 'level', 'event_count', 'follow_count', 'fan_count', 'name',
                                 ],
                                 true
                             ) <=> (int) array_search($b, $sortedAttributes, true)
@@ -139,28 +136,42 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                                 return $carry;
                             }
 
-                            $diffedAttributes = ['event_count', 'fan_count', 'follow_count', 'level', 'name'];
-                            $this->output->isDebug() and $diffedAttributes[] = 'screenshot_path';
-                            $diff = collect($logs->first()?->only($diffedAttributes))->diffAssoc($logs->last()?->only($diffedAttributes));
+                            $diffingAttributes = [
+                                /** @see SortListItemOfSameScalarTypeRector */
+                                'name', 'level', 'event_count', 'follow_count', 'fan_count',
+                            ];
+                            $fakedAttributes = [
+                                'name' => \sprintf('debug-fake-name:%s', fake()->name()),
+                                'level' => fake()->numberBetween(1, 10),
+                                'event_count' => fake()->numberBetween(1, 100),
+                                'follow_count' => fake()->numberBetween(1, 100),
+                                'fan_count' => fake()->numberBetween(1, 100),
+                            ];
+                            $diffedAttributes = collect($logs->firstOrFail()->only($diffingAttributes))
+                                ->when($this->output->isDebug(), static fn (Collection $attributes) => $attributes->merge($fakedAttributes))
+                                ->diffAssoc($logs->last()?->only($diffingAttributes));
 
-                            if ($diff->isEmpty()) {
+                            if ($diffedAttributes->isEmpty()) {
                                 return $carry;
                             }
 
-                            return $carry->push(
-                                $logs
-                                    ->map(static fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) => tap(
-                                        $netEaseCloudMusicUserHomeLog,
-                                        static function (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) use ($logs, $diff): void {
-                                            $netEaseCloudMusicUserHomeLog->extra_attributes->set($logs->map(
-                                                static fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) => $netEaseCloudMusicUserHomeLog
-                                                    ->only($diff->keys()->unshift('id')->all())
-                                            ));
-                                            $netEaseCloudMusicUserHomeLog->update();
-                                        }
-                                    ))
-                                    ->first()
-                            );
+                            $logs->each(function (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) use (
+                                $logs,
+                                $fakedAttributes,
+                                $diffedAttributes
+                            ): void {
+                                $netEaseCloudMusicUserHomeLog->extra_attributes->set($logs->map(
+                                    fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog): array => $netEaseCloudMusicUserHomeLog
+                                        ->only('id') + (
+                                            $this->output->isDebug() && $netEaseCloudMusicUserHomeLog->is($logs->firstOrFail())
+                                            ? $fakedAttributes
+                                            : $netEaseCloudMusicUserHomeLog->only($diffedAttributes->keys()->all())
+                                        )
+                                ));
+                                $netEaseCloudMusicUserHomeLog->update();
+                            });
+
+                            return $carry->push($logs->firstOrFail());
                         },
                         collect()
                     )

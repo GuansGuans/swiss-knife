@@ -24,6 +24,7 @@ final class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     /**
      * Register any application services.
      */
+    #[\Override]
     public function register(): void
     {
         // Telescope::night();
@@ -44,7 +45,10 @@ final class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      * Register the Telescope gate.
      *
      * This gate determines who can access Telescope in non-local environments.
+     *
+     * @noinspection MissingParentCallInspection
      */
+    #[\Override]
     protected function gate(): void
     {
         Gate::define('viewTelescope', static fn (User $user): bool => \in_array(

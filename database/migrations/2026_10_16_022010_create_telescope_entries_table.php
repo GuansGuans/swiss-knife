@@ -19,6 +19,7 @@ return new class extends Migration {
     /**
      * Get the migration connection name.
      */
+    #[Override]
     public function getConnection(): ?string
     {
         return config('telescope.storage.database.connection');
@@ -33,7 +34,7 @@ return new class extends Migration {
 
         $builder->create('telescope_entries', static function (Blueprint $blueprint): void {
             $blueprint->bigIncrements('sequence');
-            $blueprint->uuid('uuid');
+            $blueprint->uuid();
             $blueprint->uuid('batch_id');
             $blueprint->string('family_hash')->nullable();
             $blueprint->boolean('should_display_on_index')->default(true);
