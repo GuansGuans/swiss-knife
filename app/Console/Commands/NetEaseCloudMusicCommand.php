@@ -189,6 +189,12 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                     return;
                 }
 
+                $currentBranch = Process::run('git branch --show-current')->throw()->output();
+
+                if (!str($currentBranch)->trim()->is('main')) {
+                    return;
+                }
+
                 Process::run(implode(' && ', [
                     'git config --global user.name "guanguans"',
                     'git config --global user.email "ityaozm@gmail.com"',
