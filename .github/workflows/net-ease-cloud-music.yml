@@ -4,7 +4,11 @@ on:
   push:
   workflow_dispatch:
   schedule: # UTC 17:30 -> CST (China) 1:30 see https://datetime360.com/cn/utc-cst-china-time/
-    - cron: '*/20 * * * *'
+    - cron: '*/5 * * * *'
+    - cron: '*/6 * * * *'
+    - cron: '*/7 * * * *'
+    - cron: '*/8 * * * *'
+    - cron: '*/9 * * * *'
 
 permissions:
   contents: write
