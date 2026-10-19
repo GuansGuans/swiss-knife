@@ -184,6 +184,11 @@
                 "thedoctor0/laravel-factory-generator",
                 "worksome/envy"
             ]
+        },
+        "phpstan/extension-installer": {
+            "ignore": [
+                "sidz/phpstan-rules"
+            ]
         }
     },
     "scripts": {

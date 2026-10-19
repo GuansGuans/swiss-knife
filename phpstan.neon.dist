@@ -75,14 +75,15 @@ parameters:
         allRules: false
         exceptionMustImplementNativeThrowable:
             nativeThrowable: App\Contracts\Throwable
-    sidzIgnoreNumericStrings: true
-    sidzIgnoreMagicNumbers: [2, 3, 5, 8, 10, 14, 16, 20, 45, 64, 90, 100, 120, 200, 443, 512, 600, 2525, 0o755, 1000, 1024, 3820, 10800, 11211, 300000]
+#    sidzIgnoreNumericStrings: true
+#    sidzIgnoreMagicNumbers: [2, 3, 5, 8, 10, 14, 16, 20, 45, 64, 90, 100, 120, 200, 443, 512, 600, 2525, 0o755, 1000, 1024, 3820, 10800, 11211, 300000]
     # larastan
     larastanStrictRules:
         noFacade: false
         noGlobalLaravelFunction: false
         noValidationInController: false
     configDirectories:
+        - bootstrap/
         - config/
     checkOctaneCompatibility: true
     listenerPaths:

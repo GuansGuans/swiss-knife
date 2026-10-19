@@ -13,6 +13,11 @@ jobs:
   net-ease-cloud-music:
     name: net-ease-cloud-music
     runs-on: ubuntu-latest
+    # env:
+    #   EXCEPTION_NOTIFY_NTFY_TOPIC: ${{ secrets.EXCEPTION_NOTIFY_NTFY_TOPIC }}
+    #   EXCEPTION_NOTIFY_WPUSH_APIKEY: ${{ secrets.EXCEPTION_NOTIFY_WPUSH_APIKEY }}
+    #   NET_EASE_CLOUD_MUSIC_COOKIES: ${{ secrets.NET_EASE_CLOUD_MUSIC_COOKIES }}
+    #   NET_EASE_CLOUD_MUSIC_USER_IDS: ${{ secrets.NET_EASE_CLOUD_MUSIC_USER_IDS }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7

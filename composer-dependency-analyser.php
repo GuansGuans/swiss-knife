@@ -39,6 +39,7 @@ return (new Configuration)
         /** @see vendor/laravel/framework/composer.json */
         [
             'composer/xdebug-handler',
+            'guanguans/notify',
             'monolog/monolog',
             'nesbot/carbon',
             'spatie/image-optimizer',

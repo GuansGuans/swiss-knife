@@ -107,6 +107,7 @@ return RectorConfig::configure()
             __DIR__.'/tests/Arch/',
         ],
         StringToClassConstantOfRequestOptionsRector::class => [
+            __DIR__.'/bootstrap/app.php',
             __DIR__.'/config/telescope.php',
         ],
         TypeHintTappableCallRector::class => [

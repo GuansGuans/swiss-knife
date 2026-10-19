@@ -73,7 +73,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         collect($this->option('user-id'))
             ->tap(function () use (&$page): void {
                 $page = $this->processAwareBrowser->createPage();
-                $page->setCookies(new CookiesCollection(File::json(net_ease_cloud_music_path('cookie.json'))))->await();
+                $page->setCookies(new CookiesCollection($this->cookies()))->await();
                 // $page->navigate(self::LOGIN_URL)->waitForNavigation();
             })
             ->map(static function (int $userId) use ($page): array {
@@ -178,8 +178,10 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                         $this->output->section($title);
                         $this->info($content);
 
+                        $exceptionNotifyTitle = config('exception-notify.title');
                         config(['exception-notify.title' => $title]);
                         ExceptionNotify::reportContent($content);
+                        config(['exception-notify.title' => $exceptionNotifyTitle]);
                     });
             })
             ->tap(function (Collection $data): void {
@@ -222,10 +224,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         $this->processAwareBrowser = (new BrowserFactory)->createBrowser([
             'headless' => running_in_github_action() || !$this->output->isDebug(),
             'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
-            'windowSize' => [
-                // 1920, 1080, // Mac
-                1280, 1024,
-            ],
+            'windowSize' => \PHP_OS_FAMILY === 'Darwin' ? [/* Mac */ 1920, 1080] : [/* Linux */ 1280, 1024],
         ]);
     }
 
@@ -236,5 +235,20 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
             'user-id' => 'list',
             'user-id.*' => 'required|integer',
         ];
+    }
+
+    /**
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws \JsonException
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function cookies(): array
+    {
+        $cookiesFileOrJson = config('services.net_ease_cloud_music.cookies');
+
+        return is_file($cookiesFileOrJson)
+            ? File::json($cookiesFileOrJson)
+            : json_decode($cookiesFileOrJson, true, flags: \JSON_THROW_ON_ERROR);
     }
 }
