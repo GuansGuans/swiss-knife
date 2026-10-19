@@ -39,7 +39,10 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Run composer install
-        run: composer install --no-dev --no-interaction --ansi -v
+        run: |
+          # sed -i '' 's/^APP_ENV=local$/APP_ENV=production/' .env.example
+          sed -i 's/^APP_ENV=local$/APP_ENV=production/' .env.example
+          composer install --no-dev --no-interaction --ansi -v
 
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v2
