@@ -169,16 +169,14 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                     )
                     ?->whenNotEmpty(function (Collection $logs): void {
                         $title = 'NetEase Cloud Music user home logs changed.';
-                        $content = $logs
-                            ->pipe(fn (Collection $logs): Collection => $logs->hasSole() ? collect($logs->first()) : $logs)
-                            ->toPrettyJson(self::PRETTY_JSON_OPTIONS);
+                        $content = $logs->toPrettyJson(self::PRETTY_JSON_OPTIONS);
 
                         $this->output->section($title);
                         $this->info($content);
 
                         $exceptionNotifyTitle = config('exception-notify.title');
                         config(['exception-notify.title' => $title]);
-                        ExceptionNotify::reportContent($content);
+                        ExceptionNotify::reportContent("\n```\n$content\n```\n");
                         config(['exception-notify.title' => $exceptionNotifyTitle]);
                     });
             })
