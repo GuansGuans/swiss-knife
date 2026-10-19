@@ -43,6 +43,9 @@ jobs:
           # sed -i '' 's/^APP_ENV=local$/APP_ENV=production/' .env.example
           sed -i 's/^APP_ENV=local$/APP_ENV=production/' .env.example
           composer install --no-dev --no-interaction --ansi -v
+          php artisan about --no-interaction --ansi -v
+          php artisan env --no-interaction --ansi -v
+          php artisan optimize --no-interaction --ansi -v
 
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v2
