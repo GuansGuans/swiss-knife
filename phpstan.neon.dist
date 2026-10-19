@@ -294,6 +294,10 @@ parameters:
             paths:
                 - app/Rules/Concerns/DataAware.php
         -
+            identifier: method.notFound
+            paths:
+                - app/Support/VarDumper/ServerDumper.php
+        -
             identifier: return.deprecatedInterface
             paths:
 #                - app/Http/Requests/FormRequest.php
@@ -329,30 +333,14 @@ parameters:
 #            paths:
 #                - app/Console/Commands/HealthCheckCommand.php
 #                - app/Support/Mixin/RequestMixin.php
-#        -
-#            message: '#^Calling env_explode\(\) is forbidden, use config\(\) instead\.$#'
-#            path: config/
+        -
+            message: '#^Calling env_explode\(\) is forbidden, use config\(\) instead\.$#'
+            paths:
+#                - config/
+                - bootstrap/app.php
         -
             message: '#^Call to method App\\Support\\Mixin\\SchedulingEventMixin\:\:dumpExpression\(\) on a separate line has no effect\.$#'
             path: app/Support/Mixin/SchedulingEventMixin.php
         -
             message: '#^Null value involved in string interpolation with \$suffix$#'
             path: app/Support/Mixin/SchedulingEventMixin.php
-
-
-
-        -
-            identifier: method.notFound
-            paths:
-                - app/Support/VarDumper/ServerDumper.php
-
-
-
-        - identifier: shipmonk.nonNormalizedType
-        - identifier: offsetAccess.notFound
-        - identifier: shipmonk.arithmeticOnNonNumber
-        - identifier: method.nonObject
-        - identifier: missingType.generics
-        - identifier: disallowed.function
-        - identifier: varTag.type
-        - identifier: assign.propertyType

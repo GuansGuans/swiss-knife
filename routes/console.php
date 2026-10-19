@@ -47,20 +47,22 @@ Artisan::command(
                     ->ignoreVCS(true)
                     ->ignoreVCSIgnored(true)
                     ->files()
-        )->map(static fn (SplFileInfo $image): array => [
-            'human_size' => Number::fileSize($image->getSize()),
-            'real_path' => $image->getRealPath(),
-            'size' => $image->getSize(),
-        ]);
+        )->map(static function (SplFileInfo $image): array {
+            $size = $image->getSize();
+            \assert(\is_int($size));
 
-        /** @var \Illuminate\Console\Command $this */
+            return [
+                'human_size' => Number::fileSize($size),
+                'real_path' => $image->getRealPath(),
+                'size' => $size,
+            ];
+        });
+
+        /** @var \Illuminate\Foundation\Console\ClosureCommand $this */
         if ($this->option('dry-run')) {
             $imagesFinder()
                 ->tap(fn (Collection $images) => $this->components->info("Found {$images->count()} images:"))
-                ->each(fn (array $image) => $this->components->twoColumnDetail(
-                    $image['real_path'],
-                    $image['human_size']
-                ));
+                ->each(fn (array $image) => $this->components->twoColumnDetail($image['real_path'], $image['human_size']));
 
             return;
         }
@@ -71,18 +73,16 @@ Artisan::command(
                 $image['real_path'],
                 static fn () => resolve(OptimizerChain::class)->optimize($image['real_path'])
             ))
-            ->tap(fn (
-                Collection $images
-            ) => $this->components->info("Optimization results for {$images->count()} images:"))
-            ->tap(fn (Collection $images) => $imagesFinder()->each(function (array $fileInfo, string $file) use (
-                $images
-            ): void {
-                $originalSize = $images->get($file)['size'];
+            ->tap(fn (Collection $images) => $this->components->info("Optimization results for {$images->count()} images:"))
+            ->tap(fn (Collection $images) => $imagesFinder()->each(function (array $fileInfo, string $file) use ($images): void {
+                /** @var array{human_size: string, real_path: string, size: int} $originalImage */
+                $originalImage = $images->get($file);
+                $originalSize = $originalImage['size'];
                 // $percentage = \sprintf('(%.2f%%)', ($originalSize - $fileInfo['size']) / $originalSize * 100);
                 $percentage = Number::percentage(($originalSize - $fileInfo['size']) / $originalSize * 100, 1);
                 $this->components->twoColumnDetail(
                     $file,
-                    "{$images->get($file)['human_size']} -> {$fileInfo['human_size']} ($percentage)"
+                    "{$originalImage['human_size']} -> {$fileInfo['human_size']} ($percentage)"
                 );
             }));
     }

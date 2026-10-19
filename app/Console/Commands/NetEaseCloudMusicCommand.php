@@ -19,6 +19,7 @@ use Guanguans\LaravelExceptionNotify\Facades\ExceptionNotify;
 use HeadlessChromium\Browser\ProcessAwareBrowser;
 use HeadlessChromium\BrowserFactory;
 use HeadlessChromium\Cookies\CookiesCollection;
+use HeadlessChromium\PageUtils\ResponseWaiter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -56,24 +57,15 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
 
     /**
      * @throws \Exception
-     * @throws \HeadlessChromium\Exception\CommunicationException
-     * @throws \HeadlessChromium\Exception\CommunicationException\CannotReadResponse
-     * @throws \HeadlessChromium\Exception\CommunicationException\InvalidResponse
-     * @throws \HeadlessChromium\Exception\CommunicationException\ResponseHasError
-     * @throws \HeadlessChromium\Exception\EvaluationFailed
-     * @throws \HeadlessChromium\Exception\FilesystemException
-     * @throws \HeadlessChromium\Exception\JavascriptException
-     * @throws \HeadlessChromium\Exception\NavigationExpired
-     * @throws \HeadlessChromium\Exception\NoResponseAvailable
-     * @throws \HeadlessChromium\Exception\OperationTimedOut
-     * @throws \HeadlessChromium\Exception\ScreenshotFailed
      */
     public function handle(): void
     {
         collect($this->option('user-id'))
             ->tap(function () use (&$page): void {
                 $page = $this->processAwareBrowser->createPage();
-                $page->setCookies(new CookiesCollection($this->cookies()))->await();
+                $responseWaiter = $page->setCookies(new CookiesCollection($this->cookies()));
+                \assert($responseWaiter instanceof ResponseWaiter);
+                $responseWaiter->await();
                 // $page->navigate(self::LOGIN_URL)->waitForNavigation();
             })
             ->map(static function (int $userId) use ($page): array {
@@ -122,7 +114,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 );
 
                 $this->output->section('NetEase Cloud Music user home logs crawled.');
-                $this->table($data->first()->keys()->all(), $data);
+                $this->table($data->firstOrFail()->keys()->all(), $data);
             })
             ->tap(function (Collection $data): void {
                 $this->output->section('NetEase Cloud Music user home logs created.');
@@ -159,10 +151,14 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                                     ->map(static fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) => tap(
                                         $netEaseCloudMusicUserHomeLog,
                                         static function (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) use ($logs, $diff): void {
-                                            $netEaseCloudMusicUserHomeLog->extra_attributes = $logs->map(
+                                            // $netEaseCloudMusicUserHomeLog->extra_attributes = $logs->map(
+                                            //     static fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) => $netEaseCloudMusicUserHomeLog
+                                            //         ->only($diff->keys()->unshift('id')->all())
+                                            // );
+                                            $netEaseCloudMusicUserHomeLog->extra_attributes->set($logs->map(
                                                 static fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) => $netEaseCloudMusicUserHomeLog
                                                     ->only($diff->keys()->unshift('id')->all())
-                                            );
+                                            ));
                                             $netEaseCloudMusicUserHomeLog->update();
                                         }
                                     ))
