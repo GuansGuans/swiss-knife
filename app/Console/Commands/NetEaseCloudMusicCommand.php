@@ -223,9 +223,8 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
             'headless' => running_in_github_action() || !$this->output->isDebug(),
             'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
             'windowSize' => [
-                /** @see SortListItemOfSameScalarTypeRector */
-                1920,
-                1080,
+                // 1920, 1080, // Mac
+                1280, 1024,
             ],
         ]);
     }

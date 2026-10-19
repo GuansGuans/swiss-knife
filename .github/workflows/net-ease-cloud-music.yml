@@ -45,6 +45,7 @@ jobs:
           composer install --no-dev --no-interaction --ansi -v
           php artisan env --no-interaction --ansi -v
           php artisan optimize --no-interaction --ansi -v
+          php artisan storage:link --no-interaction --ansi -v
           php artisan about --no-interaction --ansi -v
 
       - name: Setup Chrome
