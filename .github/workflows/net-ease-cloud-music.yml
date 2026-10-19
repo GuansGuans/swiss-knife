@@ -16,11 +16,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        # with:
-        #   ref: main
-        #   fetch-depth: 0
-        #   token: ${{ secrets.GITHUB_TOKEN }}
-        #   persist-credentials: true
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -44,18 +39,18 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Run composer install
-        run: composer install --no-interaction --ansi -v
+        run: composer install --no-dev --no-interaction --ansi -v
 
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v2
         with:
           # https://github.com/browser-actions/setup-chrome#supported-version-formats
-          chrome-version: latest
-          # chrome-version: stable
+          chrome-version: stable
 
       - name: Run net-ease-cloud-music
         run: |
           chrome --version
+          sudo apt-get update && sudo apt-get install -y jpegoptim optipng pngquant gifsicle webp libavif-bin && sudo npm install -g svgo
           php artisan net-ease-cloud-music --no-interaction --ansi -v
 
         # keepalive-schedule-job:

@@ -182,8 +182,12 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                         ExceptionNotify::reportContent($content);
                     });
             })
-            ->tap(static function (Collection $data): void {
-                // optimize image
+            ->tap(function (Collection $data): void {
+                $this->call('optimize:image', [
+                    '--image' => $data->pluck('screenshot_path')->map('net_ease_cloud_music_path')->all(),
+                    '--ansi' => true,
+                    '--verbose' => true,
+                ]);
             })
             ->tap(static function (): void {
                 if (!running_in_github_action()) {

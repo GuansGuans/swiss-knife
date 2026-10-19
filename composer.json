@@ -188,15 +188,11 @@
     },
     "scripts": {
         "post-install-cmd": [
-            "@cghooks:upsert",
-            "@composer:normalize"
+            "@cghooks:upsert"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --force --ansi -vv",
-            "@artisan boost:update",
-            "@artisan:ide-helper",
-            "@cghooks:upsert",
-            "@composer:normalize"
+            "@cghooks:upsert"
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
@@ -253,7 +249,7 @@
         "blade-formatter": "blade-formatter resources/views/*.blade.php resources/views/**/*.blade.php --ignore-path= --php-version=8.5 --progress",
         "blade-formatter:check-formatted": "@blade-formatter --check-formatted",
         "blade-formatter:write": "@blade-formatter --write",
-        "cghooks": "@php vendor/bin/cghooks --ansi -vv",
+        "cghooks": "[ ! -f \"vendor/bin/cghooks\" ] && exit 0 || php vendor/bin/cghooks --ansi -vv",
         "cghooks:upsert": [
             "@cghooks add --ignore-lock",
             "@cghooks update"
@@ -265,11 +261,13 @@
         ],
         "checks:artisan": [
             "@putenv:xdebug-off",
+            "@artisan boost:update",
             "@artisan:check-service-provider",
             "@artisan:doctor",
             "@artisan:env-in-git-ignore",
             "@artisan:env-keys-check",
-            "@artisan:env-sync-keys"
+            "@artisan:env-sync-keys",
+            "@artisan:ide-helper"
         ],
         "checks:optional": [
             "@putenv:xdebug-off",
