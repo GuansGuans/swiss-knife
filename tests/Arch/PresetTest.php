@@ -24,6 +24,7 @@ use App\Console\Commands\AbstractCommand;
 use App\Listeners\ContextSubscriber;
 use App\Models\AbstractModel;
 use App\Support\ComposerScripts;
+use App\Support\Mixin\SchedulingEventMixin;
 
 arch()
     ->group(__DIR__, __FILE__)
@@ -38,6 +39,7 @@ arch()
         AbstractModel::class,
         ComposerScripts::class,
         ContextSubscriber::class,
+        SchedulingEventMixin::class,
     ]);
 
 arch()

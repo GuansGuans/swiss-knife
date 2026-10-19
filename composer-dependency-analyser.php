@@ -54,9 +54,6 @@ return (new Configuration)
         [
             'laravel/tinker',
             'opcodesio/log-viewer',
-            'skywarth/chaotic-schedule',
-            'spatie/laravel-activitylog',
-            'spatie/laravel-backup',
             'spatie/laravel-image-optimizer',
             'swiss-devjoy/laravel-optimize-sqlite',
         ],

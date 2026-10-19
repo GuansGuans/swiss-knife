@@ -230,7 +230,9 @@ if (!\function_exists('make')) {
 if (!\function_exists('net_ease_cloud_music_path')) {
     function net_ease_cloud_music_path(string $path = ''): string
     {
-        return join_paths(storage_path(join_paths('app', 'net-ease-cloud-music')), $path);
+        return join_paths('app', 'net-ease-cloud-music')
+                |> storage_path(...)
+                |> (static fn (string $basePath): string => join_paths($basePath, $path));
     }
 }
 

@@ -19,6 +19,7 @@ use Guanguans\LaravelExceptionNotify\Facades\ExceptionNotify;
 use HeadlessChromium\Browser\ProcessAwareBrowser;
 use HeadlessChromium\BrowserFactory;
 use HeadlessChromium\Cookies\CookiesCollection;
+use HeadlessChromium\Page;
 use HeadlessChromium\PageUtils\ResponseWaiter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
@@ -69,7 +70,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 // $page->navigate(self::LOGIN_URL)->waitForNavigation();
             })
             ->map(static function (int $userId) use ($page): array {
-                /** @var \HeadlessChromium\Page $page */
+                \assert($page instanceof Page);
                 $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId));
                 $page->waitUntilContainsElement('#g_iframe');
                 Sleep::sleep(self::WAIT_DURATION);
@@ -151,10 +152,6 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                                     ->map(static fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) => tap(
                                         $netEaseCloudMusicUserHomeLog,
                                         static function (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) use ($logs, $diff): void {
-                                            // $netEaseCloudMusicUserHomeLog->extra_attributes = $logs->map(
-                                            //     static fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) => $netEaseCloudMusicUserHomeLog
-                                            //         ->only($diff->keys()->unshift('id')->all())
-                                            // );
                                             $netEaseCloudMusicUserHomeLog->extra_attributes->set($logs->map(
                                                 static fn (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) => $netEaseCloudMusicUserHomeLog
                                                     ->only($diff->keys()->unshift('id')->all())
@@ -174,10 +171,10 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                         $this->output->section($title);
                         $this->info($content);
 
-                        $exceptionNotifyTitle = config('exception-notify.title');
+                        $originalTitle = config('exception-notify.title');
                         config(['exception-notify.title' => $title]);
                         ExceptionNotify::reportContent("\n```\n$content\n```\n");
-                        config(['exception-notify.title' => $exceptionNotifyTitle]);
+                        config(['exception-notify.title' => $originalTitle]);
                     });
             })
             ->tap(function (Collection $data): void {
