@@ -208,7 +208,7 @@ return Application::configure(\dirname(__DIR__))
 
         config([
             'exception-notify.environments' => ['production'],
-            'exception-notify.rate_limiter.max_attempts' => 4,
+            // 'exception-notify.rate_limiter.max_attempts' => 4,
             'exception-notify.job.connection' => 'sync',
             'exception-notify.channels.stack.channels' => ['log', 'ntfy', 'wPush'],
             'exception-notify.channels.ntfy.message.options.topic' => env(
