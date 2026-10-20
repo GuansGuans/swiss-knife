@@ -5,9 +5,9 @@ on:
     branches:
       - main
   workflow_dispatch:
-  schedule: # UTC 17:30 -> CST (China) 1:30 see https://datetime360.com/cn/utc-cst-china-time/
-    # - cron: '*/10 * * * *'
-    - cron: '*/5 * * * *'
+  # UTC 17:30 -> CST (China) 1:30 see https://datetime360.com/cn/utc-cst-china-time/
+  schedule:
+    - cron: '*/10 * * * *'
 
 permissions:
   contents: write
