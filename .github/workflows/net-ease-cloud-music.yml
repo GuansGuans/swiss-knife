@@ -5,9 +5,14 @@ on:
     branches:
       - main
   workflow_dispatch:
-  # UTC 17:30 -> CST (China) 1:30 see https://datetime360.com/cn/utc-cst-china-time/
+  # - Cloudflare Workers Cron Triggers: <https://developers.cloudflare.com/workers/configuration/cron-triggers/>
+  # - cron-job.org: <https://cron-job.org/>
+  # - EasyCron: <https://www.easycron.com/>
+  # - GitHub Actions: <https://docs.github.com/actions/using-workflows/events-that-trigger-workflows#schedule>
+  # - Linux `cron`: <https://man7.org/linux/man-pages/man5/crontab.5.html>
   schedule:
-    - cron: '*/10 * * * *'
+    # UTC 17:30 -> CST (China) 1:30 <https://datetime360.com/cn/utc-cst-china-time/>
+    - cron: '*/30 * * * *'
 
 permissions:
   contents: write
