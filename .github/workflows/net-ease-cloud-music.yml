@@ -5,6 +5,16 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      verbose:
+        description: Verbosity level
+        type: choice
+        options:
+          - '-v'
+          - '-vv'
+          - '-vvv'
+        default: '-v'
+        required: true
   # # - Cloudflare Workers Cron Triggers: <https://developers.cloudflare.com/workers/configuration/cron-triggers/>
   # # - cron-job.org: <https://cron-job.org/>
   # # - EasyCron: <https://www.easycron.com/>
@@ -78,7 +88,7 @@ jobs:
 
       - name: Run net-ease-cloud-music
         run: |
-          php artisan net-ease-cloud-music --no-interaction --ansi -v
+          php artisan net-ease-cloud-music --no-interaction --ansi ${{ inputs.verbose || '-v' }}
 
         # keepalive-schedule-job:
         #   name: Keepalive schedule job
