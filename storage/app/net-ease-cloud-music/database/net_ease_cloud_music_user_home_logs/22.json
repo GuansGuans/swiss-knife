@@ -7,7 +7,24 @@
     "follow_count": 8,
     "fan_count": 9,
     "screenshot_path": "user-id-13655983778/home-20261020194432.png",
-    "extra_attributes": [],
+    "extra_attributes": [
+        {
+            "id": 24,
+            "name": "debug-fake-name:冀智渊",
+            "level": 6,
+            "event_count": 26,
+            "follow_count": 54,
+            "fan_count": 97
+        },
+        {
+            "id": 22,
+            "name": "Bella_贝拉贝拉贝拉",
+            "level": 8,
+            "event_count": 0,
+            "follow_count": 8,
+            "fan_count": 9
+        }
+    ],
     "created_at": "2026-10-20T11:44:35.000000Z",
-    "updated_at": "2026-10-20T11:44:35.000000Z"
+    "updated_at": "2026-10-20T11:46:56.000000Z"
 }

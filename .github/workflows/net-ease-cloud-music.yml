@@ -89,8 +89,10 @@ jobs:
 
       - name: Run net-ease-cloud-music
         run: |
-          log_file="storage/logs/laravel-$(date +%F).log"; [ ! -f "$log_file" ] || { cat "$log_file" && false; }
-          php artisan net-ease-cloud-music --no-interaction --ansi ${{ inputs.verbose || '-v' }} || { cat "$log_file" && false; }
+          log_file="storage/logs/laravel-$(date +%F).log"
+          [ ! -f "$log_file" ] || cat "$log_file"
+          php artisan net-ease-cloud-music --no-interaction --ansi ${{ inputs.verbose || '-v' }} || { [ ! -f "$log_file" ] || cat "$log_file"; false; }
+          [ ! -f "$log_file" ] || cat "$log_file"
 
         # keepalive-schedule-job:
         #   name: Keepalive schedule job
