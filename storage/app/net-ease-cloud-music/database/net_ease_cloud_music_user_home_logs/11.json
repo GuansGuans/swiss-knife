@@ -7,7 +7,16 @@
     "follow_count": 132,
     "fan_count": 9,
     "screenshot_path": "images/user-id-284761234/home-20261020234648.png",
-    "extra_attributes": [],
+    "extra_attributes": [
+        {
+            "id": 13,
+            "fan_count": 8
+        },
+        {
+            "id": 11,
+            "fan_count": 9
+        }
+    ],
     "created_at": "2026-10-20T15:46:52.000000Z",
-    "updated_at": "2026-10-20T15:46:52.000000Z"
+    "updated_at": "2026-10-20T16:01:47.000000Z"
 }
