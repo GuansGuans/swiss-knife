@@ -41,6 +41,7 @@ use RectorLaravel\Rector\Empty_\EmptyToBlankAndFilledFuncRector;
 use RectorLaravel\Rector\FuncCall\HelperFuncCallToFacadeClassRector;
 use RectorLaravel\Rector\FuncCall\RemoveDumpDataDeadCodeRector;
 use RectorLaravel\Rector\FuncCall\TypeHintTappableCallRector;
+use RectorLaravel\Rector\FuncCall\UnlinkFuncCallToFileFacadeDeleteRector;
 use RectorLaravel\Rector\If_\ThrowIfRector;
 use RectorLaravel\Rector\MethodCall\ValidationRuleArrayStringValueToArrayRector;
 use RectorLaravel\Rector\StaticCall\DispatchToHelperFunctionsRector;
@@ -112,6 +113,9 @@ return RectorConfig::configure()
         ],
         TypeHintTappableCallRector::class => [
             __DIR__.'/bootstrap/app.php',
+        ],
+        UnlinkFuncCallToFileFacadeDeleteRector::class => [
+            __DIR__.'/composer-bump',
         ],
     ])
     ->withCache(__DIR__.'/.build/rector/')

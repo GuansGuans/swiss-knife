@@ -46,7 +46,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class NetEaseCloudMusicCommand extends AbstractCommand
 {
     public const int PRETTY_JSON_OPTIONS = \JSON_PRETTY_PRINT | \JSON_UNESCAPED_LINE_TERMINATORS | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE;
-    private const int WAIT_MICROSECONDS = 2 * 1000 * 1000; // 2s
+    private const int WAIT_MICROSECONDS = 3 * 1000 * 1000; // 3s
 
     // private const string LOGIN_URL = 'https://music.163.com/#/login';
     private const string USER_HOME_URL_TEMPLATE = 'https://music.163.com/#/user/home?id=%s';
