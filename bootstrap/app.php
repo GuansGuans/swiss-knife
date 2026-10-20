@@ -212,7 +212,7 @@ return Application::configure(\dirname(__DIR__))
             'exception-notify.channels.stack.channels' => ['log', 'ntfy', 'wPush'],
             'exception-notify.channels.ntfy.message.options.topic' => env(
                 'EXCEPTION_NOTIFY_NTFY_TOPIC',
-                'swiss-knife-net-ease-cloud-music'
+                'swiss-knife-exception-notify'
             ),
             'exception-notify.channels.ntfy.message.options.markdown' => true,
             'exception-notify.channels.ntfy.pipes' => [

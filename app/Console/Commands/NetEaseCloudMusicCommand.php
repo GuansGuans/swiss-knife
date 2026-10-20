@@ -42,9 +42,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class NetEaseCloudMusicCommand extends AbstractCommand
 {
     public const int PRETTY_JSON_OPTIONS = \JSON_PRETTY_PRINT | \JSON_UNESCAPED_LINE_TERMINATORS | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE;
+    private const int WAIT_DURATION = 3;
 
-    // private const int WAIT_DURATION = 3;
-    private const string LOGIN_URL = 'https://music.163.com/#/login';
+    // private const string LOGIN_URL = 'https://music.163.com/#/login';
     private const string USER_HOME_URL_TEMPLATE = 'https://music.163.com/#/user/home?id=%s';
     private ProcessAwareBrowser $processAwareBrowser;
 
@@ -69,13 +69,14 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 $responseWaiter = $page->setCookies(new CookiesCollection($this->cookies()));
                 \assert($responseWaiter instanceof ResponseWaiter);
                 $responseWaiter->await();
-                $page->navigate(self::LOGIN_URL)->waitForNavigation();
+                // $page->navigate(self::LOGIN_URL)->waitForNavigation();
             })
             ->map(static function (int $userId) use ($page): array {
                 \assert($page instanceof Page);
-                $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId))->waitForNavigation();
-                // $page->waitUntilContainsElement('#g_iframe');
-                // Sleep::sleep(self::WAIT_DURATION);
+                // $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId))->waitForNavigation();
+                $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId));
+                $page->waitUntilContainsElement('#g_iframe');
+                Sleep::sleep(self::WAIT_DURATION);
 
                 $page->screenshot()->saveToFile(net_ease_cloud_music_path($screenshotPath = \sprintf(
                     "user-id-$userId/home-%s.png",
@@ -182,10 +183,25 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                         $this->output->section($title);
                         $this->info($content);
 
-                        $originalTitle = config('exception-notify.title');
-                        config(['exception-notify.title' => $title]);
-                        ExceptionNotify::reportContent("\n```\n$content\n```\n");
-                        config(['exception-notify.title' => $originalTitle]);
+                        $originalConfiguration = collect([
+                            /** @see SortListItemOfSameScalarTypeRector */
+                            'exception-notify.title',
+                            'exception-notify.channels.ntfy.message.options.topic',
+                        ])->mapWithKeys(static fn (string $key): array => [$key => config($key)])->all();
+
+                        try {
+                            config([
+                                'exception-notify.title' => $title,
+                                'exception-notify.channels.ntfy.message.options.topic' => 'swiss-knife-net-ease-cloud-music',
+                            ]);
+                            ExceptionNotify::reportContent("\n```\n$content\n```\n");
+                        } catch (\Throwable $throwable) {
+                            config($originalConfiguration);
+
+                            throw $throwable;
+                        } finally {
+                            config($originalConfiguration);
+                        }
                     });
             })
             ->tap(function (Collection $data): void {
