@@ -77,7 +77,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
             })
             ->map(static function (int $userId) use ($page): array {
                 \assert($page instanceof Page);
-                $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId))->waitForNavigation();
+                // $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId))->waitForNavigation();
                 $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId));
                 $page->waitUntilContainsElement('#g_iframe');
                 Sleep::usleep(self::WAIT_MICROSECONDS);
