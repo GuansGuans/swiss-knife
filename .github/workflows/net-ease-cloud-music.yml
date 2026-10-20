@@ -15,14 +15,14 @@ on:
           - '-vvv'
         default: '-v'
         required: true
-  # # - Cloudflare Workers Cron Triggers: <https://developers.cloudflare.com/workers/configuration/cron-triggers/>
-  # # - cron-job.org: <https://cron-job.org/>
-  # # - EasyCron: <https://www.easycron.com/>
-  # # - GitHub Actions: <https://docs.github.com/actions/using-workflows/events-that-trigger-workflows#schedule>
-  # # - Linux `cron`: <https://man7.org/linux/man-pages/man5/crontab.5.html>
-  # schedule:
-  #   # UTC 17:30 -> CST (China) 1:30 <https://datetime360.com/cn/utc-cst-china-time/>
-  #   - cron: '*/30 * * * *'
+        # # - Cloudflare Workers Cron Triggers: <https://developers.cloudflare.com/workers/configuration/cron-triggers/>
+        # # - cron-job.org: <https://cron-job.org/>
+        # # - EasyCron: <https://www.easycron.com/>
+        # # - GitHub Actions: <https://docs.github.com/actions/using-workflows/events-that-trigger-workflows#schedule>
+        # # - Linux `cron`: <https://man7.org/linux/man-pages/man5/crontab.5.html>
+        # schedule:
+        #   # UTC 17:30 -> CST (China) 1:30 <https://datetime360.com/cn/utc-cst-china-time/>
+        #   - cron: '*/30 * * * *'
 
 concurrency:
   group: ${{ github.workflow }}
@@ -68,12 +68,13 @@ jobs:
       - name: Run composer install
         run: |
           # sed -i '' 's/^APP_ENV=local$/APP_ENV=production/' .env.example
+          # sed -i -e 's/^APP_ENV=local$/APP_ENV=production/' .env.example
           sed -i -e 's/^APP_DEBUG=true$/APP_DEBUG=false/' -e 's/^APP_ENV=local$/APP_ENV=production/' .env.example
           composer install --no-dev --no-interaction --ansi -v
-          php artisan env --no-interaction --ansi -v
+          composer app:install
           php artisan optimize --no-interaction --ansi -v
-          php artisan storage:link --no-interaction --ansi -v
-          php artisan about --no-interaction --ansi -v
+          # php artisan exception-notify:test --ansi -v
+          # cat "storage/logs/laravel-$(date +%F).log
 
       - name: Setup Chrome
         uses: browser-actions/setup-chrome@v2
@@ -88,7 +89,8 @@ jobs:
 
       - name: Run net-ease-cloud-music
         run: |
-          php artisan net-ease-cloud-music --no-interaction --ansi ${{ inputs.verbose || '-v' }}
+          log_file="storage/logs/laravel-$(date +%F).log"; [ ! -f "$log_file" ] || { cat "$log_file" && false; }
+          php artisan net-ease-cloud-music --no-interaction --ansi ${{ inputs.verbose || '-v' }} || { cat "$log_file" && false; }
 
         # keepalive-schedule-job:
         #   name: Keepalive schedule job

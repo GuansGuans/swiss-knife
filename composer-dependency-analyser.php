@@ -40,6 +40,7 @@ return (new Configuration)
         [
             'composer/xdebug-handler',
             'guanguans/notify',
+            'guzzlehttp/guzzle',
             'monolog/monolog',
             'nesbot/carbon',
             'spatie/image-optimizer',
@@ -52,6 +53,7 @@ return (new Configuration)
     )
     ->ignoreErrorsOnPackages(
         [
+            'fakerphp/faker',
             'laravel/tinker',
             'opcodesio/log-viewer',
             'spatie/laravel-image-optimizer',

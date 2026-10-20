@@ -222,8 +222,10 @@
         "app:find-static-method": "App\\Support\\ComposerScripts::findStaticMethod",
         "app:fix-neon": "Guanguans\\PHPStanRules\\Support\\ComposerScripts::fixNeon",
         "app:generate-gitleaks-ignore": "Guanguans\\Notify\\Foundation\\Support\\ComposerScripts::generateGitleaksIgnore",
-        "app:install-project": [
-            "@post-create-project-cmd",
+        "app:install": [
+            "@artisan key:generate",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@artisan migrate --graceful --force",
             "@artisan env",
             "@artisan storage:link",
             "@artisan about"

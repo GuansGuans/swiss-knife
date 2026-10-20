@@ -18,12 +18,16 @@ namespace App\Console\Commands;
 
 use App\Models\NetEaseCloudMusicUserHomeLog;
 use Guanguans\LaravelExceptionNotify\Facades\ExceptionNotify;
+use Guanguans\Notify\Foundation\Client;
+use GuzzleHttp\MessageFormatter;
+use GuzzleHttp\Middleware;
 use HeadlessChromium\Browser\ProcessAwareBrowser;
 use HeadlessChromium\BrowserFactory;
 use HeadlessChromium\Cookies\CookiesCollection;
 use HeadlessChromium\Page;
 use HeadlessChromium\PageUtils\ResponseWaiter;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
@@ -42,7 +46,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class NetEaseCloudMusicCommand extends AbstractCommand
 {
     public const int PRETTY_JSON_OPTIONS = \JSON_PRETTY_PRINT | \JSON_UNESCAPED_LINE_TERMINATORS | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE;
-    private const int WAIT_DURATION = 3;
+    private const int WAIT_MICROSECONDS = 1000 * 1000; // 1s
 
     // private const string LOGIN_URL = 'https://music.163.com/#/login';
     private const string USER_HOME_URL_TEMPLATE = 'https://music.163.com/#/user/home?id=%s';
@@ -76,7 +80,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 // $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId))->waitForNavigation();
                 $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId));
                 $page->waitUntilContainsElement('#g_iframe');
-                Sleep::sleep(self::WAIT_DURATION);
+                Sleep::usleep(self::WAIT_MICROSECONDS);
 
                 $page->screenshot()->saveToFile(net_ease_cloud_music_path($screenshotPath = \sprintf(
                     "user-id-$userId/home-%s.png",
@@ -234,8 +238,6 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
 
     /**
      * @throws \Throwable
-     *
-     * @noinspection StaticInvocationViaThisInspection
      */
     #[\Override]
     protected function initialize(InputInterface $input, OutputInterface $output): void
@@ -249,9 +251,26 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
 
         $this->processAwareBrowser = (new BrowserFactory)->createBrowser([
             'headless' => running_in_github_action() || !$this->output->isDebug(),
-            'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
+            // 'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
             'windowSize' => \PHP_OS_FAMILY === 'Darwin' ? [/* Mac */ 1920, 1080] : [/* Linux */ 1280, 1024],
         ]);
+
+        if ($this->output->isVeryVerbose()) {
+            collect(config('exception-notify.channels'))->each(static function (array $configuration, string $name): void {
+                if ('notify' !== ($configuration['driver'] ?? $name)) {
+                    return;
+                }
+
+                Config::set(
+                    "exception-notify.channels.$name.client.extender",
+                    static fn (Client $client): Client => $client->push(Middleware::log(
+                        Log::channel(),
+                        new MessageFormatter(MessageFormatter::DEBUG),
+                        'debug'
+                    ))
+                );
+            });
+        }
     }
 
     #[\Override]

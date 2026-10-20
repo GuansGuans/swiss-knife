@@ -25,7 +25,7 @@ git clone ...
 cd swiss-knife/
 composer install --no-dev --ansi -v
 # 配置相关环境变量...
-composer app:install-project
+composer app:install
 ```
 
 ## Usage
