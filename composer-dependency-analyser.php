@@ -54,8 +54,6 @@ return (new Configuration)
     ->ignoreErrorsOnPackages(
         [
             'fakerphp/faker',
-            'laravel/tinker',
-            'opcodesio/log-viewer',
             'spatie/laravel-image-optimizer',
             'swiss-devjoy/laravel-optimize-sqlite',
         ],

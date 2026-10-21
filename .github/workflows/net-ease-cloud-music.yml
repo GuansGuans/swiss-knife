@@ -84,8 +84,10 @@ jobs:
       - name: Setup Other
         run: |
           chrome --version
-          sudo apt-get update && sudo apt-get install -y fonts-noto-cjk && sudo fc-cache -f && fc-match sans:lang=zh-cn
-          sudo apt-get install -y jpegoptim optipng pngquant gifsicle webp libavif-bin && sudo npm install -g svgo
+          # sudo apt-get update && sudo apt-get install -y fonts-noto-cjk && sudo fc-cache -f && fc-match sans:lang=zh-cn
+          sudo apt-get install -y fonts-noto-cjk && sudo fc-cache -f && fc-match sans:lang=zh-cn
+          # sudo apt-get install -y jpegoptim optipng pngquant gifsicle webp libavif-bin && sudo npm install -g svgo
+          sudo apt-get install -y optipng pngquant
 
       - name: Run net-ease-cloud-music
         run: |

@@ -45,7 +45,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 )]
 final class NetEaseCloudMusicCommand extends AbstractCommand
 {
-    public const int PRETTY_JSON_OPTIONS = \JSON_PRETTY_PRINT | \JSON_UNESCAPED_LINE_TERMINATORS | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE;
+    public const int PRETTY_JSON_OPTIONS =
+        \JSON_PRETTY_PRINT |
+        \JSON_UNESCAPED_LINE_TERMINATORS |
+        \JSON_UNESCAPED_SLASHES |
+        \JSON_UNESCAPED_UNICODE;
     private const int WAIT_MICROSECONDS = 3 * 1000 * 1000; // 3s
 
     // private const string LOGIN_URL = 'https://music.163.com/#/login';
@@ -95,7 +99,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                     'fan_count' => '#fan_count',
                 ])->map(
                     static fn (string $selector): ?string => $page
-                        ->evaluate("document.querySelector('#g_iframe')?.contentDocument?.querySelector('#head-box $selector')?.textContent?.trim() ?? null")
+                        ->evaluate("document.querySelector('#g_iframe').contentDocument.querySelector('#head-box $selector').textContent.trim()")
                         ->getReturnValue()
                 )->put('user_id', $userId)->put('screenshot_path', $screenshotPath)->all();
             })
@@ -119,6 +123,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 $this->output->section('NetEase Cloud Music user home logs crawled.');
                 $this->table($data->firstOrFail()->keys()->all(), $data);
             })
+            // ->dd()
             ->tap(function (Collection $data): void {
                 $this->output->section('NetEase Cloud Music user home logs created.');
                 $this->info(
@@ -227,8 +232,12 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 }
 
                 Process::run(implode(' && ', [
-                    'git config --global user.name "guanguans"',
-                    'git config --global user.email "ityaozm@gmail.com"',
+                    'git config user.name "guanguans"',
+                    'git config user.email "ityaozm@gmail.com"',
+                    // 'git config pull.rebase true',
+                    // 'git config rebase.autoStash true',
+                    // 'git pull',
+                    'git pull --rebase --autostash',
                     \sprintf('git add --force %s', net_ease_cloud_music_path()),
                     'git commit --message "chore: update net ease cloud music storage" --no-verify --signoff',
                     'git push',
@@ -243,17 +252,6 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         $this->option('user-id') or $this->input->setOption('user-id', config('services.net_ease_cloud_music.user_ids'));
-        throw_if(
-            collect($this->option('user-id'))->duplicates()->isNotEmpty(),
-            \InvalidArgumentException::class,
-            'The --user-id option must be unique.'
-        );
-
-        $this->processAwareBrowser = (new BrowserFactory)->createBrowser([
-            'headless' => running_in_github_action() || !$this->output->isDebug(),
-            // 'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
-            'windowSize' => \PHP_OS_FAMILY === 'Darwin' ? [/* Mac */ 1920, 1080] : [/* Linux */ 1280, 1024],
-        ]);
 
         if ($this->output->isVeryVerbose()) {
             collect(config('exception-notify.channels'))->each(static function (array $configuration, string $name): void {
@@ -263,14 +261,18 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
 
                 Config::set(
                     "exception-notify.channels.$name.client.extender",
-                    static fn (Client $client): Client => $client->push(Middleware::log(
-                        Log::channel(),
-                        new MessageFormatter(MessageFormatter::DEBUG),
-                        'debug'
-                    ))
+                    static fn (Client $client): Client => $client->push(
+                        Middleware::log(Log::channel(), new MessageFormatter(MessageFormatter::DEBUG), 'debug')
+                    )
                 );
             });
         }
+
+        $this->processAwareBrowser = (new BrowserFactory)->createBrowser([
+            'headless' => running_in_github_action() || !$this->output->isDebug(),
+            // 'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
+            'windowSize' => \PHP_OS_FAMILY === 'Darwin' ? [/* Mac */ 1920, 1080] : [/* Linux */ 1280, 1024],
+        ]);
     }
 
     #[\Override]
@@ -278,7 +280,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
     {
         return [
             'user-id' => 'list',
-            'user-id.*' => 'required|integer',
+            'user-id.*' => 'required|integer|min:1|distinct',
         ];
     }
 

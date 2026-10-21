@@ -123,8 +123,10 @@ return Application::configure(\dirname(__DIR__))
                     'Laravel\\Pail\\PailServiceProvider',
                     'Laravel\\Pao\\Laravel\\ServiceProvider',
                     // 'Laravel\\Telescope\\TelescopeServiceProvider',
+                    'Laravel\\Tinker\\TinkerServiceProvider',
                     'Msamgan\\LaravelEnvKeysChecker\\LaravelEnvKeysCheckerServiceProvider',
                     'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
+                    'Opcodes\\LogViewer\\LogViewerServiceProvider',
                     'Orangehill\\Iseed\\IseedServiceProvider',
                     'Pest\\Laravel\\PestServiceProvider',
                     'Reliese\\Coders\\CodersServiceProvider',
@@ -208,7 +210,6 @@ return Application::configure(\dirname(__DIR__))
 
         config([
             'exception-notify.environments' => ['production'],
-            // 'exception-notify.rate_limiter.max_attempts' => 4,
             'exception-notify.job.connection' => 'sync',
             'exception-notify.channels.stack.channels' => ['log', 'ntfy', 'wPush'],
             'exception-notify.channels.ntfy.message.options.topic' => env(
