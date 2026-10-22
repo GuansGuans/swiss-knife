@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 
+<a name="1.0.0"></a>
+## [1.0.0] - 2026-10-22
+
 <a name="1.0.0-rc1"></a>
 ## [1.0.0-rc1] - 2026-10-19
 ### ✨ Features
@@ -25,5 +28,6 @@ All notable changes to this project will be documented in this file.
 - **app:** Simplify timezone handling and clean up tests ([22b4241](https://github.com/GuansGuans/swiss-knife/commit/22b4241))
 
 
-[Unreleased]: https://github.com/GuansGuans/swiss-knife/compare/1.0.0-rc1...HEAD
+[Unreleased]: https://github.com/GuansGuans/swiss-knife/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/GuansGuans/swiss-knife/compare/1.0.0-rc1...1.0.0
 [1.0.0-rc1]: https://github.com/GuansGuans/swiss-knife/compare/1.0.0-beta1...1.0.0-rc1
