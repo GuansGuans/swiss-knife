@@ -108,7 +108,7 @@ final class CheckServiceProviderCommand extends AbstractCommand
     {
         return [
             'except' => 'list',
-            'except.*' => 'required|string',
+            'except.*' => 'required|string|distinct',
             'ignore-indirect' => 'boolean',
         ];
     }

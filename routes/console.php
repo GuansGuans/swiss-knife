@@ -16,7 +16,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Number;
 use Spatie\ImageOptimizer\OptimizerChain;
-use SplFileInfo as RawSplFileInfo;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -25,38 +24,42 @@ Artisan::command('inspire', function (): void {
 })->purpose('Display an inspiring quote');
 
 Artisan::command(
-    'optimize:image {--image=* : The list of images} {--dry-run : Only list found images}',
+    'optimize:image {--path=* : The list of image paths(directory or file)} {--dry-run : Only list found images}',
     function (): void {
-        $imagesFinder = fn (): Collection => collect(
-            $this->option('image')
-                ? collect($this->option('image'))->mapWithKeys(static function (string $image): array {
-                    /** @see Finder::getIterator() */
-                    $file = new RawSplFileInfo(realpath($image));
-                    $key = $file->getPathname();
-                    $file = new SplFileInfo($key, $file->getPath(), $key);
+        $imagesFinder = function (): Collection {
+            $finder = Finder::create()
+                ->exclude(['.build/', 'Fixtures/', 'vendor-bin/', 'vendor/'])
+                ->name(['/\.avif$/', '/\.gif$/', '/\.jpeg$/', '/\.jpg$/', '/\.png$/', '/\.svg$/', '/\.webp$/'])
+                ->size('> 0')
+                ->files();
 
-                    return [$key => $file];
-                })
-                : Finder::create()
-                    ->in(getcwd())
-                    ->exclude(['.build/', 'Fixtures/', 'vendor-bin/', 'vendor/'])
-                    ->name(['/\.avif$/', '/\.gif$/', '/\.jpeg$/', '/\.jpg$/', '/\.png$/', '/\.svg$/', '/\.webp$/'])
-                    ->size('> 0')
-                    ->ignoreDotFiles(false)
-                    ->ignoreUnreadableDirs(false)
-                    ->ignoreVCS(true)
-                    ->ignoreVCSIgnored(true)
-                    ->files()
-        )->map(static function (SplFileInfo $image): array {
-            $size = $image->getSize();
-            \assert(\is_int($size));
+            return collect(
+                $this->option('path')
+                    ? array_reduce(
+                        $this->option('path'),
+                        static fn (
+                            Finder $finder,
+                            string $path
+                        ): Finder => is_dir($path) ? $finder->in($path) : $finder->append([$path]),
+                        $finder
+                    )
+                    : $finder
+                        ->in(getcwd())
+                        ->ignoreDotFiles(false)
+                        ->ignoreUnreadableDirs(false)
+                        ->ignoreVCS(true)
+                        ->ignoreVCSIgnored(true)
+            )->map(static function (SplFileInfo $image): array {
+                $size = $image->getSize();
+                \assert(\is_int($size));
 
-            return [
-                'human_size' => Number::fileSize($size),
-                'real_path' => $image->getRealPath(),
-                'size' => $size,
-            ];
-        });
+                return [
+                    'human_size' => Number::fileSize($size),
+                    'real_path' => $image->getRealPath(),
+                    'size' => $size,
+                ];
+            });
+        };
 
         /** @var \Illuminate\Foundation\Console\ClosureCommand $this */
         if ($this->option('dry-run')) {

@@ -12,7 +12,7 @@
         "cerbero/command-validator": "^3.0",
         "chrome-php/chrome": "^1.16",
         "fakerphp/faker": "^1.24",
-        "guanguans/laravel-exception-notify": "^7.0",
+        "guanguans/laravel-exception-notify": "^7.1",
         "laravel/framework": "^13.38",
         "lorisleiva/cron-translator": "^0.5",
         "ryangjchandler/orbit": "^1.4",
@@ -243,10 +243,8 @@
             "@artisan ide-helper:meta",
             "@artisan ide-helper:models --reset --nowrite"
         ],
-        "artisan:lang-add": "@artisan lang:add en zh_CN zh_TW",
+        "artisan:lang-add": "@artisan lang:add en zh_CN",
         "artisan:lang-update": "@artisan lang:update",
-        "artisan:optimize:image": "@artisan optimize:image",
-        "artisan:optimize:image-dry-run": "@artisan:optimize:image --dry-run",
         "artisan:xdebug": [
             "@env-put-xdebug-on",
             "@artisan"

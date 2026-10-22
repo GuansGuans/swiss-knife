@@ -106,16 +106,15 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
             ->tap(function (Collection $data): void {
                 $data = $data->map(
                     static fn (array $attributes): Collection => collect($attributes)
-                        ->except('screenshot_path')
+                        ->only($sortedAttributes = [
+                            /** @see SortListItemOfSameScalarTypeRector */
+                            'user_id', 'level', 'event_count', 'follow_count', 'fan_count', 'name',
+                        ])
                         ->sortKeysUsing(
-                            static fn (string $a, string $b): int => (int) array_search(
-                                $a,
-                                $sortedAttributes = [
-                                    /** @see SortListItemOfSameScalarTypeRector */
-                                    'user_id', 'level', 'event_count', 'follow_count', 'fan_count', 'name',
-                                ],
-                                true
-                            ) <=> (int) array_search($b, $sortedAttributes, true)
+                            static fn (
+                                string $a,
+                                string $b
+                            ): int => (int) array_search($a, $sortedAttributes, true) <=> (int) array_search($b, $sortedAttributes, true)
                         )
                         ->mapWithKeys(static fn (mixed $value, string $key): array => [Str::headline($key) => $value])
                 );
@@ -215,7 +214,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
             })
             ->tap(function (Collection $data): void {
                 $this->call('optimize:image', [
-                    '--image' => $data->pluck('screenshot_path')->map('net_ease_cloud_music_path')->all(),
+                    '--path' => $data->pluck('screenshot_path')->map('net_ease_cloud_music_path')->all(),
                     '--ansi' => true,
                     '--verbose' => true,
                 ]);
