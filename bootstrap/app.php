@@ -511,6 +511,7 @@ return Application::configure(\dirname(__DIR__))
     ->withSchedule(static function (Schedule $schedule): void {
         // $schedule->command('inspire')->daily()/* ->atRandom('07:15', '11:42') */ /* ->doNotMonitor() */ /* ->ddExpression() */ ->dailyAppendOutputTo()->runInBackground()->withoutOverlapping(60);
         $schedule->command('telescope:prune')->everyThirtyMinutes()->skip(app()->isProduction())->dailyAppendOutputTo()->withoutOverlapping();
+        // $schedule->command(NetEaseCloudMusicCommand::class)->everyThirtyMinutes()->dailyAppendOutputTo()->withoutOverlapping();
     })
     ->withMiddleware(static function (Middleware $middleware): void {})
     ->withExceptions(static function (Exceptions $exceptions): void {

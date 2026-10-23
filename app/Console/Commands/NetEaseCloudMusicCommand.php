@@ -83,7 +83,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 \assert($page instanceof Page);
                 // $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId))->waitForNavigation();
                 $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId));
-                $page->waitUntilContainsElement('#g_iframe');
+                // $page->waitUntilContainsElement('#g_iframe');
                 Sleep::usleep(self::WAIT_MICROSECONDS);
 
                 $page->screenshot()->saveToFile(net_ease_cloud_music_path($screenshotPath = \sprintf(
