@@ -16,7 +16,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\NetEaseCloudMusicUserHomeLog;
+use App\Models\NetEaseCloudMusicUserHomeSnapshot;
 use Guanguans\LaravelExceptionNotify\Facades\ExceptionNotify;
 use Guanguans\Notify\Foundation\Client;
 use GuzzleHttp\MessageFormatter;
@@ -77,54 +77,55 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
     {
         collect($this->option('user-id'))
             ->tap(function () use (&$page): void {
-                $this->components->task('1. Login', function () use (&$page): void {
-                    $page = $this->login();
-                });
+                $this->components->task(
+                    '1. Login',
+                    function () use (&$page): void {
+                        $page = $this->login();
+                    }
+                );
             })
             ->map(function (int $userId, int $index) use ($page): array {
                 $this->components->task(
-                    \sprintf('2-%s. Crawl user[%s] data', ++$index, $userId),
-                    function () use (&$crawlUserData, $page, $userId): void {
-                        $crawlUserData = $this->crawlUserData($page, $userId);
+                    \sprintf('2-%s. Crawl user [%s] home snapshot', ++$index, $userId),
+                    function () use (&$snapshot, $page, $userId): void {
+                        $snapshot = $this->crawlUserHomeSnapshot($page, $userId);
                     }
                 );
 
-                return $crawlUserData;
+                return $snapshot;
             })
-            ->tap(function (Collection $data): void {
-                $this->components->task('3. Print crawled users data', function () use ($data): void {
-                    $this->newLine();
-                    $this->printCrawledUsersData($data);
-                });
+            ->tap(function (Collection $snapshots): void {
+                $this->components->task(
+                    '3. Print crawled user home snapshots',
+                    fn (): null => $this->printCrawledUserHomeSnapshots($snapshots)
+                );
             })
-            // ->dd()
-            ->tap(function (Collection $data): void {
-                $this->components->task('4. Create crawled users data', function () use ($data): void {
-                    $this->newLine();
-                    $this->createCrawledUsersData($data);
-                });
+            ->tap(function (Collection $snapshots): void {
+                $this->components->task(
+                    '4. Create crawled user home snapshots',
+                    fn (): null => $this->createCrawledUserHomeSnapshots($snapshots)
+                );
             })
-            ->tap(function (Collection $data): void {
-                $this->components->task('5. Update crawled users data', function () use ($data): void {
-                    $this->newLine();
-                    $this->updateCrawledUsersData($data);
-                });
+            ->tap(function (Collection $snapshots): void {
+                $this->components->task(
+                    '5. Update crawled user home snapshots',
+                    fn (): null => $this->updateCrawledUserHomeSnapshots($snapshots)
+                );
             })
-            ->tap(function (Collection $data): void {
-                $this->components->task('6. Optimize users screenshot', function () use ($data): void {
-                    $this->optimizeUsersScreenshot($data);
-                });
+            ->tap(function (Collection $snapshots): void {
+                $this->components->task(
+                    '6. Optimize user home screenshots',
+                    fn (): null => $this->optimizeUserHomeScreenshots($snapshots)
+                );
             })
             ->tap(function (): void {
-                $this->components->task('7. Commit users screenshot', function (): void {
-                    $this->commitUsersScreenshot();
-                });
+                $this->components->task(
+                    '7. Commit user home snapshots and screenshots',
+                    fn (): null => $this->commitUserHomeSnapshotsAndScreenshots()
+                );
             });
     }
 
-    /**
-     * @throws \Throwable
-     */
     #[\Override]
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
@@ -148,7 +149,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         }
 
         $this->processAwareBrowser = (new BrowserFactory)->createBrowser([
-            // 'headless' => running_in_github_action() || !$output->isDebug(),
+            'headless' => running_in_github_action() || !$output->isDebug(),
             // 'debugLogger' => $output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
             'windowSize' => \PHP_OS_FAMILY === 'Darwin' ? [/* Mac */ 1920, 1080] : [/* Linux */ 1280, 1024],
         ]);
@@ -193,7 +194,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
      *
      * @return array<string, scalar>
      */
-    private function crawlUserData(Page $page, int $userId): array
+    private function crawlUserHomeSnapshot(Page $page, int $userId): array
     {
         // $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId))->waitForNavigation();
         $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId));
@@ -219,13 +220,13 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
     }
 
     /**
-     * @param Collection<int, array<string, scalar>> $data
+     * @param Collection<int, array<string, scalar>> $snapshots
      */
-    private function printCrawledUsersData(Collection $data): void
+    private function printCrawledUserHomeSnapshots(Collection $snapshots): void
     {
-        $data = $data->map(
-            static fn (array $attributes): Collection => collect($attributes)
-                ->only($sortedAttributes = [
+        $snapshots = $snapshots->map(
+            static fn (array $snapshot): Collection => collect($snapshot)
+                ->only($sortedKeys = [
                     /** @see SortListItemOfSameScalarTypeRector */
                     'user_id', 'level', 'event_count', 'follow_count', 'fan_count', 'name',
                 ])
@@ -233,47 +234,48 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                     static fn (
                         string $a,
                         string $b
-                    ): int => (int) array_search($a, $sortedAttributes, true) <=> (int) array_search($b, $sortedAttributes, true)
+                    ): int => (int) array_search($a, $sortedKeys, true) <=> (int) array_search($b, $sortedKeys, true)
                 )
                 ->mapWithKeys(static fn (mixed $value, string $key): array => [Str::headline($key) => $value])
         );
 
-        // $this->output->section('NetEase Cloud Music user home logs crawled.');
-        $this->table($data->firstOrFail()->keys()->all(), $data);
+        $this->newLine();
+        $this->table($snapshots->firstOrFail()->keys()->all(), $snapshots);
     }
 
     /**
-     * @param Collection<int, array<string, scalar>> $data
+     * @param Collection<int, array<string, scalar>> $snapshots
      */
-    private function createCrawledUsersData(Collection $data): void
+    private function createCrawledUserHomeSnapshots(Collection $snapshots): void
     {
-        // $this->output->section('NetEase Cloud Music user home logs created.');
+        $this->newLine();
         $this->info(
-            $data
+            $snapshots
                 ->map(
-                    static fn (array $attributes): NetEaseCloudMusicUserHomeLog => NetEaseCloudMusicUserHomeLog::query()
-                        ->create($attributes)
+                    static fn (array $snapshot): NetEaseCloudMusicUserHomeSnapshot => NetEaseCloudMusicUserHomeSnapshot::query()
+                        ->create($snapshot)
                 )
                 ->toPrettyJson(self::PRETTY_JSON_OPTIONS)
         );
     }
 
     /**
-     * @param Collection<int, array<string, scalar>> $data
+     * @param Collection<int, array<string, scalar>> $snapshots
      */
-    private function updateCrawledUsersData(Collection $data): void
+    private function updateCrawledUserHomeSnapshots(Collection $snapshots): void
     {
-        $data
+        $snapshots
             ->pluck('user_id')
             ->reduce(
-                function (Collection $carry, int $userId): Collection {
-                    $logs = NetEaseCloudMusicUserHomeLog::query()->where(
-                        'user_id',
-                        $userId
-                    )->latest('id')->limit($limit = 2)->get();
+                function (Collection $updatedSnapshots, int $userId): Collection {
+                    $latestTwoSnapshots = NetEaseCloudMusicUserHomeSnapshot::query()
+                        ->where('user_id', $userId)
+                        ->latest('id')
+                        ->limit($twoLimit = 2)
+                        ->get();
 
-                    if ($logs->count() !== $limit) {
-                        return $carry;
+                    if ($latestTwoSnapshots->count() !== $twoLimit) {
+                        return $updatedSnapshots;
                     }
 
                     $diffingAttributes = [
@@ -287,44 +289,43 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                         'follow_count' => fake()->numberBetween(1, 100),
                         'fan_count' => fake()->numberBetween(1, 100),
                     ];
-                    $diffedAttributes = collect($logs->firstOrFail()->only($diffingAttributes))
+                    $diffedAttributes = collect($latestTwoSnapshots->firstOrFail()->only($diffingAttributes))
                         ->when(
                             $this->output->isDebug(),
                             static fn (Collection $attributes) => $attributes->merge($fakedAttributes)
                         )
-                        ->diffAssoc($logs->last()?->only($diffingAttributes));
+                        ->diffAssoc($latestTwoSnapshots->last()?->only($diffingAttributes));
 
                     if ($diffedAttributes->isEmpty()) {
-                        return $carry;
+                        return $updatedSnapshots;
                     }
 
-                    $logs->each(function (NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog) use (
-                        $logs,
+                    $latestTwoSnapshots->each(function (NetEaseCloudMusicUserHomeSnapshot $netEaseCloudMusicUserHomeSnapshot) use (
+                        $latestTwoSnapshots,
                         $fakedAttributes,
                         $diffedAttributes
                     ): void {
-                        $netEaseCloudMusicUserHomeLog->extra_attributes->set($logs->map(
+                        $netEaseCloudMusicUserHomeSnapshot->extra_attributes->set($latestTwoSnapshots->map(
                             fn (
-                                NetEaseCloudMusicUserHomeLog $netEaseCloudMusicUserHomeLog
-                            ): array => $netEaseCloudMusicUserHomeLog
-                                ->only('id') + (
-                                    $this->output->isDebug() && $netEaseCloudMusicUserHomeLog->is($logs->firstOrFail())
+                                NetEaseCloudMusicUserHomeSnapshot $netEaseCloudMusicUserHomeSnapshot
+                            ): array => $netEaseCloudMusicUserHomeSnapshot->only('id') + (
+                                $this->output->isDebug() && $netEaseCloudMusicUserHomeSnapshot->is($latestTwoSnapshots->firstOrFail())
                                     ? $fakedAttributes
-                                    : $netEaseCloudMusicUserHomeLog->only($diffedAttributes->keys()->all())
-                                )
+                                    : $netEaseCloudMusicUserHomeSnapshot->only($diffedAttributes->keys()->all())
+                            )
                         ));
-                        $netEaseCloudMusicUserHomeLog->update();
+                        $netEaseCloudMusicUserHomeSnapshot->update();
                     });
 
-                    return $carry->push($logs->firstOrFail());
+                    return $updatedSnapshots->push($latestTwoSnapshots->firstOrFail());
                 },
                 collect()
             )
-            ?->whenNotEmpty(function (Collection $logs): void {
-                $title = 'NetEase Cloud Music user home logs changed.';
-                $content = $logs->toPrettyJson(self::PRETTY_JSON_OPTIONS);
+            ?->whenNotEmpty(function (Collection $updatedSnapshots): void {
+                $title = 'Netease cloud music user home snapshots changed';
+                $content = $updatedSnapshots->toPrettyJson(self::PRETTY_JSON_OPTIONS);
 
-                // $this->output->section($title);
+                $this->newLine();
                 $this->info($content);
 
                 $originalConfiguration = collect([
@@ -350,18 +351,18 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
     }
 
     /**
-     * @param Collection<int, array<string, scalar>> $data
+     * @param Collection<int, array<string, scalar>> $snapshots
      */
-    private function optimizeUsersScreenshot(Collection $data): void
+    private function optimizeUserHomeScreenshots(Collection $snapshots): void
     {
         $this->call('optimize:image', [
-            '--path' => $data->pluck('screenshot_path')->map('net_ease_cloud_music_path')->all(),
+            '--path' => $snapshots->pluck('screenshot_path')->map('net_ease_cloud_music_path')->all(),
             '--ansi' => true,
             '--verbose' => true,
         ]);
     }
 
-    private function commitUsersScreenshot(): void
+    private function commitUserHomeSnapshotsAndScreenshots(): void
     {
         if (!running_in_github_action()) {
             return;

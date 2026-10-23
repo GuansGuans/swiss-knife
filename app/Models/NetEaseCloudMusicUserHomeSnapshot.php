@@ -27,7 +27,7 @@ use Spatie\SchemalessAttributes\Casts\SchemalessAttributes;
     'screenshot_path',
     'user_id',
 ])]
-final class NetEaseCloudMusicUserHomeLog extends AbstractModel
+final class NetEaseCloudMusicUserHomeSnapshot extends AbstractModel
 {
     use Orbital;
     use SoftDeletes;

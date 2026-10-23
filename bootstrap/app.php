@@ -167,7 +167,7 @@ return Application::configure(\dirname(__DIR__))
             ],
             'services.net_ease_cloud_music' => [
                 'cookies' => env('NET_EASE_CLOUD_MUSIC_COOKIES', net_ease_cloud_music_path('cookies.json')),
-                'user_ids' => env_explode('NET_EASE_CLOUD_MUSIC_USER_IDS', [284761234, 13655983778]),
+                'user_ids' => env_explode('NET_EASE_CLOUD_MUSIC_USER_IDS', [/* 284761234, */ 13655983778]),
             ],
         ]);
 

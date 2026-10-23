@@ -43,6 +43,7 @@ use RectorLaravel\Rector\FuncCall\RemoveDumpDataDeadCodeRector;
 use RectorLaravel\Rector\FuncCall\TypeHintTappableCallRector;
 use RectorLaravel\Rector\FuncCall\UnlinkFuncCallToFileFacadeDeleteRector;
 use RectorLaravel\Rector\If_\ThrowIfRector;
+use RectorLaravel\Rector\MethodCall\UseComponentPropertyWithinCommandsRector;
 use RectorLaravel\Rector\MethodCall\ValidationRuleArrayStringValueToArrayRector;
 use RectorLaravel\Rector\StaticCall\DispatchToHelperFunctionsRector;
 use RectorLaravel\Rector\StaticCall\RequestStaticValidateToInjectRector;
@@ -77,7 +78,7 @@ return RectorConfig::configure()
             __DIR__.'/app/Support/Mixin/',
         ],
         ModelCastsPropertyToCastsMethodRector::class => [
-            __DIR__.'/app/Models/NetEaseCloudMusicUserHomeLog.php',
+            __DIR__.'/app/Models/NetEaseCloudMusicUserHomeSnapshot.php',
         ],
         RemoveDeadInstanceOfAssertRector::class => [
             __DIR__.'/bootstrap/app.php',
@@ -116,6 +117,9 @@ return RectorConfig::configure()
         ],
         UnlinkFuncCallToFileFacadeDeleteRector::class => [
             __DIR__.'/composer-bump',
+        ],
+        UseComponentPropertyWithinCommandsRector::class => [
+            __DIR__.'/app/Console/Commands/NetEaseCloudMusicCommand.php',
         ],
     ])
     ->withCache(__DIR__.'/.build/rector/')
