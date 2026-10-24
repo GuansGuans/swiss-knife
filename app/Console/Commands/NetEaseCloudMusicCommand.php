@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
+use SebastianBergmann\Timer\ResourceUsageFormatter;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -77,9 +78,12 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
     public function handle(): void
     {
         collect($this->option('user-id'))
+            ->tap(function (): void {
+                $this->newLine();
+            })
             ->tap(function () use (&$page): void {
                 $this->components->task(
-                    '1. Login NetEase CloudMusic',
+                    '<comment>1. Login NetEase CloudMusic</comment>',
                     function () use (&$page): void {
                         $page = $this->loginNetEaseCloudMusic();
                     }
@@ -87,7 +91,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
             })
             ->map(function (int $userId, int $index) use ($page): array {
                 $this->components->task(
-                    \sprintf('2-%s. Crawl user(%s) home snapshot', ++$index, $userId),
+                    \sprintf('<comment>2-%s. Crawl user(%s) home snapshot</comment>', ++$index, $userId),
                     function () use (&$snapshot, $page, $userId): void {
                         $snapshot = retry($times = 5, function (int $attempts) use ($times, $page, $userId): array {
                             1 < $attempts and $this->components->warn(\sprintf(
@@ -104,33 +108,36 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
             })
             ->tap(function (Collection $snapshots): void {
                 $this->components->task(
-                    '3. Print crawled user home snapshots',
+                    '<comment>3. Print crawled user home snapshots</comment>',
                     fn (): null => $this->printCrawledUserHomeSnapshots($snapshots)
                 );
             })
             ->tap(function (Collection $snapshots): void {
                 $this->components->task(
-                    '4. Create crawled user home snapshots',
+                    '<comment>4. Create crawled user home snapshots</comment>',
                     fn (): null => $this->createCrawledUserHomeSnapshots($snapshots)
                 );
             })
             ->tap(function (Collection $snapshots): void {
                 $this->components->task(
-                    '5. Update crawled user home snapshots',
+                    '<comment>5. Update crawled user home snapshots</comment>',
                     fn (): null => $this->updateCrawledUserHomeSnapshots($snapshots)
                 );
             })
             ->tap(function (Collection $snapshots): void {
                 $this->components->task(
-                    '6. Optimize user home screenshots',
+                    '<comment>6. Optimize user home screenshots</comment>',
                     fn (): null => $this->optimizeUserHomeScreenshots($snapshots)
                 );
             })
             ->tap(function (Collection $snapshots): void {
                 $this->components->task(
-                    '7. Commit user home snapshots and screenshots',
+                    '<comment>7. Commit user home snapshots and screenshots</comment>',
                     fn (): null => $this->commitUserHomeSnapshotsAndScreenshots($snapshots)
                 );
+            })
+            ->tap(function (): void {
+                $this->components->success((new ResourceUsageFormatter)->resourceUsageSinceStartOfRequest());
             });
     }
 

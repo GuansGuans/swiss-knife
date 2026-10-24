@@ -17,6 +17,7 @@
         "guanguans/laravel-soar": "^6.0",
         "laravel/framework": "^13.38",
         "lorisleiva/cron-translator": "^0.5",
+        "phpunit/php-timer": "^9.0",
         "ryangjchandler/orbit": "^1.4",
         "spatie/laravel-image-optimizer": "^1.8",
         "spatie/laravel-schemaless-attributes": "^2.6",
