@@ -40,7 +40,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[\Illuminate\Console\Attributes\Signature(
     <<<'SIGNATURE'
         net-ease-cloud-music
-        {--user-id=* : The list of NetEase Cloud Music user id.}
+        {--user-id=* : The list of NetEase CloudMusic user id.}
         SIGNATURE
 )]
 final class NetEaseCloudMusicCommand extends AbstractCommand
@@ -50,7 +50,8 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         \JSON_UNESCAPED_LINE_TERMINATORS |
         \JSON_UNESCAPED_SLASHES |
         \JSON_UNESCAPED_UNICODE;
-    private const int WAIT_MICROSECONDS = 3 * 1000 * 1000; // 3s
+    private const int WAIT_DEFAULT_LOAD_MILLISECONDS = 3 * 1000;
+    private const int WAIT_FIRST_LOAD_MILLISECONDS = 5 * 1000;
 
     // private const string LOGIN_URL = 'https://music.163.com/#/login';
     private const string USER_HOME_URL_TEMPLATE = 'https://music.163.com/#/user/home?id=%s';
@@ -78,15 +79,15 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         collect($this->option('user-id'))
             ->tap(function () use (&$page): void {
                 $this->components->task(
-                    '1. Login',
+                    '1. Login NetEase CloudMusic',
                     function () use (&$page): void {
-                        $page = $this->login();
+                        $page = $this->loginNetEaseCloudMusic();
                     }
                 );
             })
             ->map(function (int $userId, int $index) use ($page): array {
                 $this->components->task(
-                    \sprintf('2-%s. Crawl user [%s] home snapshot', ++$index, $userId),
+                    \sprintf('2-%s. Crawl user(%s) home snapshot', ++$index, $userId),
                     function () use (&$snapshot, $page, $userId): void {
                         $snapshot = $this->crawlUserHomeSnapshot($page, $userId);
                     }
@@ -171,7 +172,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      * @throws \JsonException
      */
-    private function login(): Page
+    private function loginNetEaseCloudMusic(): Page
     {
         $page = $this->processAwareBrowser->createPage();
         $cookiesFileOrJson = config('services.net_ease_cloud_music.cookies');
@@ -189,7 +190,9 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
 
     /**
      * @throws \HeadlessChromium\Exception\CommunicationException
+     * @throws \HeadlessChromium\Exception\EvaluationFailed
      * @throws \HeadlessChromium\Exception\FilesystemException
+     * @throws \HeadlessChromium\Exception\OperationTimedOut
      * @throws \HeadlessChromium\Exception\ScreenshotFailed
      *
      * @return array<string, scalar>
@@ -199,7 +202,9 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         // $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId))->waitForNavigation();
         $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, $userId));
         // $page->waitUntilContainsElement('#g_iframe');
-        Sleep::usleep(self::WAIT_MICROSECONDS);
+        array_first($this->option('user-id')) === $userId
+            ? $this->waitLoad(self::WAIT_FIRST_LOAD_MILLISECONDS)
+            : $this->waitLoad();
 
         $page->screenshot()->saveToFile(net_ease_cloud_music_path($screenshotPath = \sprintf(
             "images/user-id-$userId/home-%s.png",
@@ -322,11 +327,8 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 collect()
             )
             ?->whenNotEmpty(function (Collection $updatedSnapshots): void {
-                $title = 'Netease cloud music user home snapshots changed';
-                $content = $updatedSnapshots->toPrettyJson(self::PRETTY_JSON_OPTIONS);
-
                 $this->newLine();
-                $this->info($content);
+                $this->info($content = $updatedSnapshots->toPrettyJson(self::PRETTY_JSON_OPTIONS));
 
                 $originalConfiguration = collect([
                     /** @see SortListItemOfSameScalarTypeRector */
@@ -336,7 +338,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
 
                 try {
                     config([
-                        'exception-notify.title' => $title,
+                        'exception-notify.title' => 'NetEase CloudMusic user home snapshots changed',
                         'exception-notify.channels.ntfy.message.options.topic' => 'swiss-knife-net-ease-cloud-music',
                     ]);
                     ExceptionNotify::reportContent("\n```\n$content\n```\n");
@@ -377,13 +379,15 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         Process::run(implode(' && ', [
             'git config user.name "guanguans"',
             'git config user.email "ityaozm@gmail.com"',
-            // 'git config pull.rebase true',
-            // 'git config rebase.autoStash true',
-            // 'git pull',
             'git pull --rebase --autostash',
             \sprintf('git add --force %s', net_ease_cloud_music_path()),
-            'git commit --message "chore: update net ease cloud music storage" --no-verify --signoff',
+            'git commit --message "chore: update NetEase CloudMusic storage" --no-verify --signoff',
             'git push',
         ]))->throw();
+    }
+
+    private function waitLoad(int $milliseconds = self::WAIT_DEFAULT_LOAD_MILLISECONDS): void
+    {
+        Sleep::usleep($milliseconds * 1000);
     }
 }
