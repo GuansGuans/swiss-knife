@@ -54,6 +54,8 @@ return (new Configuration)
     ->ignoreErrorsOnPackages(
         [
             'fakerphp/faker',
+            'guanguans/laravel-api-response',
+            'guanguans/laravel-soar',
             'spatie/laravel-image-optimizer',
             'swiss-devjoy/laravel-optimize-sqlite',
         ],

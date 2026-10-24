@@ -89,7 +89,14 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 $this->components->task(
                     \sprintf('2-%s. Crawl user(%s) home snapshot', ++$index, $userId),
                     function () use (&$snapshot, $page, $userId): void {
-                        $snapshot = $this->crawlUserHomeSnapshot($page, $userId);
+                        $snapshot = retry($times = 5, function (int $attempts) use ($times, $page, $userId): array {
+                            1 < $attempts and $this->components->warn(\sprintf(
+                                "Attempt %d/$times failed; retrying attempt $attempts/$times...",
+                                $attempts - 1,
+                            ));
+
+                            return $this->crawlUserHomeSnapshot($page, $userId);
+                        });
                     }
                 );
 
@@ -119,10 +126,10 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                     fn (): null => $this->optimizeUserHomeScreenshots($snapshots)
                 );
             })
-            ->tap(function (): void {
+            ->tap(function (Collection $snapshots): void {
                 $this->components->task(
                     '7. Commit user home snapshots and screenshots',
-                    fn (): null => $this->commitUserHomeSnapshotsAndScreenshots()
+                    fn (): null => $this->commitUserHomeSnapshotsAndScreenshots($snapshots)
                 );
             });
     }
@@ -360,11 +367,16 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         $this->call('optimize:image', [
             '--path' => $snapshots->pluck('screenshot_path')->map('net_ease_cloud_music_path')->all(),
             '--ansi' => true,
+            // '--silent' => true,
+            // '--quiet' => true,
             '--verbose' => true,
         ]);
     }
 
-    private function commitUserHomeSnapshotsAndScreenshots(): void
+    /**
+     * @param Collection<int, array<string, scalar>> $snapshots
+     */
+    private function commitUserHomeSnapshotsAndScreenshots(Collection $snapshots): void
     {
         if (!running_in_github_action()) {
             return;
@@ -380,7 +392,13 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
             'git config user.name "guanguans"',
             'git config user.email "ityaozm@gmail.com"',
             'git pull --rebase --autostash',
-            \sprintf('git add --force %s', net_ease_cloud_music_path()),
+            \sprintf(
+                'git add --force %s',
+                $snapshots
+                    ->pluck('screenshot_path')->map('net_ease_cloud_music_path')
+                    ->push(net_ease_cloud_music_path('database/'))
+                    ->implode(' ')
+            ),
             'git commit --message "chore: update NetEase CloudMusic storage" --no-verify --signoff',
             'git push',
         ]))->throw();
