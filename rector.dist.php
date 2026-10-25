@@ -96,7 +96,7 @@ return RectorConfig::configure()
             // __DIR__.'/app/Models/',
         ],
         SortAssociativeArrayByKeyRector::class => [
-            __DIR__.'/app/Console/Commands/NetEaseCloudMusicCommand.php',
+            __DIR__.'/app/Console/Commands/NetEaseCloudMusicSnapshotCommand.php',
             __DIR__.'/bootstrap/app.php',
             __DIR__.'/config/',
         ],
@@ -119,7 +119,7 @@ return RectorConfig::configure()
             __DIR__.'/composer-bump',
         ],
         UseComponentPropertyWithinCommandsRector::class => [
-            __DIR__.'/app/Console/Commands/NetEaseCloudMusicCommand.php',
+            __DIR__.'/app/Console/Commands/NetEaseCloudMusicSnapshotCommand.php',
         ],
     ])
     ->withCache(__DIR__.'/.build/rector/')

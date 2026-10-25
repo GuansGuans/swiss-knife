@@ -19,7 +19,8 @@ declare(strict_types=1);
  */
 
 use App\Console\Commands\CheckServiceProviderCommand;
-use App\Console\Commands\NetEaseCloudMusicCommand;
+use App\Console\Commands\NetEaseCloudMusicFreshCommand;
+use App\Console\Commands\NetEaseCloudMusicSnapshotCommand;
 use Illuminate\Foundation\Console\RouteListCommand;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
@@ -31,7 +32,8 @@ it('is console', function (): void {
     )
         ->filter(fn (ReflectionClass $reflectionClass): bool => $reflectionClass->isInstantiable())
         ->reject(fn (ReflectionClass $reflectionClass): bool => str($reflectionClass->getName())->is([
-            NetEaseCloudMusicCommand::class,
+            NetEaseCloudMusicFreshCommand::class,
+            NetEaseCloudMusicSnapshotCommand::class,
         ]))
         ->keys()
         ->merge([RouteListCommand::class])

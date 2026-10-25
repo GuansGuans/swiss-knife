@@ -224,7 +224,7 @@ parameters:
 #        - identifier: encapsedStringPart.nonString
 #        - identifier: logicalAnd.resultUnused
 #        - identifier: logicalOr.resultUnused
-#        - identifier: method.dynamicName
+        - identifier: method.dynamicName
         - identifier: offsetAccess.nonOffsetAccessible
 #        - identifier: property.dynamicName
 #        - identifier: public.property.unused
@@ -312,7 +312,7 @@ parameters:
         -
             identifier: complexity.functionLike
             paths:
-                - app/Console/Commands/NetEaseCloudMusicCommand.php
+                - app/Console/Commands/NetEaseCloudMusicSnapshotCommand.php
                 - app/Support/helpers.php
         -
             identifier: arrayFilter.strict

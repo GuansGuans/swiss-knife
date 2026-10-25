@@ -26,6 +26,7 @@ use HeadlessChromium\BrowserFactory;
 use HeadlessChromium\Cookies\CookiesCollection;
 use HeadlessChromium\Page;
 use HeadlessChromium\PageUtils\ResponseWaiter;
+use Illuminate\Console\OutputStyle;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -38,14 +39,14 @@ use SebastianBergmann\Timer\Timer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-#[\Illuminate\Console\Attributes\Description('Command description')]
+#[\Illuminate\Console\Attributes\Description('Snapshot the NetEase CloudMusic user home')]
 #[\Illuminate\Console\Attributes\Signature(
     <<<'SIGNATURE'
-        net-ease-cloud-music
+        net-ease-cloud-music:snapshot
         {--user-id=* : The list of NetEase CloudMusic user id.}
         SIGNATURE
 )]
-final class NetEaseCloudMusicCommand extends AbstractCommand
+final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
 {
     public const int PRETTY_JSON_OPTIONS =
         \JSON_PRETTY_PRINT |
@@ -387,6 +388,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
      * @param Collection<int, array<string, scalar>> $snapshots
      *
      * @noinspection StaticInvocationViaThisInspection
+     * @noinspection PhpVoidFunctionResultUsedInspection
      */
     private function commitUserHomeSnapshotsAndScreenshots(Collection $snapshots): void
     {
@@ -395,7 +397,11 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         }
 
         // $currentBranch = Process::run('git branch --show-current')->throw()->output();
-        $currentBranch = $this->processHelperMustRun('git branch --show-current')->getOutput();
+        $output = $this->output->isVeryVerbose()
+            ? tap(new OutputStyle($this->input, clone $this->output->getOutput()))->setVerbosity(OutputInterface::VERBOSITY_DEBUG)
+            : null;
+        $this->output->isVeryVerbose() and $this->newLine();
+        $currentBranch = $this->processHelperMustRun('git branch --show-current', output: $output)->getOutput();
 
         if (!str($currentBranch)->trim()->is('main')) {
             return;
@@ -416,7 +422,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         //     'git commit --message "chore: update NetEase CloudMusic storage" --no-verify --signoff',
         //     'git push',
         // ]))->throw();
-
+        $this->output->isVeryVerbose() and $this->newLine();
         $this->processHelperMustRun(implode(' && ', [
             'git config user.name "guanguans"',
             'git config user.email "ityaozm@gmail.com"',
@@ -431,7 +437,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
             'git status',
             'git commit --message "chore: update NetEase CloudMusic storage" --no-verify --signoff',
             'git push',
-        ]));
+        ]), output: $output);
     }
 
     private function waitLoad(int $milliseconds = self::WAIT_DEFAULT_LOAD_MILLISECONDS): void

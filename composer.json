@@ -74,7 +74,7 @@
         "povils/phpmnd": "^3.6",
         "rector/swiss-knife": "^2.7",
         "reliese/laravel": "^1.4",
-        "roave/backward-compatibility-check": "^8.23",
+        "roave/backward-compatibility-check": "^8.25",
         "roave/no-floaters": "^1.16",
         "shipmonk/composer-dependency-analyser": "^1.8",
         "shipmonk/dead-code-detector": "^1.4",

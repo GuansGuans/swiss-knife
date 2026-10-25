@@ -90,11 +90,11 @@ jobs:
           sudo apt-get install --no-install-recommends -y fonts-noto-cjk optipng pngquant && sudo fc-cache -f && fc-match sans:lang=zh-cn
         timeout-minutes: 3
 
-      - name: Run net-ease-cloud-music
+      - name: Run net-ease-cloud-music:snapshot
         run: |
           log_file="storage/logs/laravel-$(date +%F).log"
           [ ! -f "$log_file" ] || cat "$log_file"
-          php artisan net-ease-cloud-music --ansi ${{ inputs.verbose || '-v' }} || { [ ! -f "$log_file" ] || cat "$log_file"; false; }
+          php artisan net-ease-cloud-music:snapshot --ansi ${{ inputs.verbose || '-v' }} || { [ ! -f "$log_file" ] || cat "$log_file"; false; }
           [ ! -f "$log_file" ] || cat "$log_file"
 
         # keepalive-schedule-job:

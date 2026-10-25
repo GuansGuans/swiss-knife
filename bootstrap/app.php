@@ -18,7 +18,8 @@ declare(strict_types=1);
  * @see https://github.com/GuansGuans/swiss-knife
  */
 
-use App\Console\Commands\NetEaseCloudMusicCommand;
+use App\Console\Commands\NetEaseCloudMusicFreshCommand;
+use App\Console\Commands\NetEaseCloudMusicSnapshotCommand;
 use App\Listeners\ContextSubscriber;
 use App\Rules\AbstractRule;
 use App\Rules\MaxUploadSizeRule;
@@ -199,7 +200,7 @@ return Application::configure(\dirname(__DIR__))
             {
                 return json_encode(
                     array_filter($this->getModelAttributes($model), static fn (mixed $value): bool => null !== $value),
-                    NetEaseCloudMusicCommand::PRETTY_JSON_OPTIONS
+                    NetEaseCloudMusicSnapshotCommand::PRETTY_JSON_OPTIONS
                 );
             }
         });
@@ -271,7 +272,7 @@ return Application::configure(\dirname(__DIR__))
             Artisan::call('db:seed');
         });
     })
-    ->booting(static function (): void {
+    ->booting(static function (Application $application): void {
         /**
          * @see https://github.com/laravel/octane/issues/990
          * @see https://medium.com/@raymondlor/migrating-to-laravel-octane-almost-cost-me-a-client-forever-59b0162e74e2
@@ -289,6 +290,7 @@ return Application::configure(\dirname(__DIR__))
         Route::pattern('id', '[0-9]+');
         Route::patterns(['id' => '[0-9]+']);
         ServerDumper::register();
+        NetEaseCloudMusicFreshCommand::prohibit($application->isProduction());
     })
     ->booting(static function (): void {
         config(['session.secure' => true]);
@@ -511,7 +513,7 @@ return Application::configure(\dirname(__DIR__))
     ->withSchedule(static function (Schedule $schedule): void {
         // $schedule->command('inspire')->daily()/* ->atRandom('07:15', '11:42') */ /* ->doNotMonitor() */ /* ->ddExpression() */ ->dailyAppendOutputTo()->runInBackground()->withoutOverlapping(60);
         $schedule->command('telescope:prune')->everyThirtyMinutes()->skip(app()->isProduction())->dailyAppendOutputTo()->withoutOverlapping();
-        // $schedule->command(NetEaseCloudMusicCommand::class)->everyThirtyMinutes()->dailyAppendOutputTo()->withoutOverlapping();
+        // $schedule->command(NetEaseCloudMusicSnapshotCommand::class)->everyThirtyMinutes()->dailyAppendOutputTo()->withoutOverlapping();
     })
     ->withMiddleware(static function (Middleware $middleware): void {})
     ->withExceptions(static function (Exceptions $exceptions): void {
