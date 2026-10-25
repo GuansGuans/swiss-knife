@@ -35,7 +35,6 @@ use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use SebastianBergmann\Timer\ResourceUsageFormatter;
-use SebastianBergmann\Timer\Timer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -65,28 +64,27 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
      */
     public function __destruct()
     {
-        if (isset($this->processAwareBrowser)) {
-            $this->processAwareBrowser->close();
-        }
+        $this->closeProcessAwareBrowser();
     }
 
     /**
-     * @throws \HeadlessChromium\Exception\CommunicationException
-     * @throws \HeadlessChromium\Exception\NoResponseAvailable
-     * @throws \HeadlessChromium\Exception\OperationTimedOut
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     * @throws \JsonException
+     * @throws \Exception
      */
-    public function handle(Timer $timer): void
+    public function handle(): void
     {
         collect($this->option('user-id'))
-            ->tap(function () use ($timer): void {
-                $timer->start();
+            ->tap(function (): void {
                 $this->newLine();
+            })
+            ->tap(function (): void {
+                $this->components->task(
+                    '<comment>1. Create process aware browser</comment>',
+                    fn (): ProcessAwareBrowser => $this->createProcessAwareBrowser()
+                );
             })
             ->tap(function () use (&$page): void {
                 $this->components->task(
-                    '<comment>1. Login NetEase CloudMusic</comment>',
+                    '<comment>2. Login NetEase CloudMusic</comment>',
                     function () use (&$page): void {
                         $page = $this->loginNetEaseCloudMusic();
                     }
@@ -94,7 +92,7 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
             })
             ->map(function (int $userId, int $index) use ($page): array {
                 $this->components->task(
-                    \sprintf('<comment>2-%s. Crawl user(%s) home snapshot</comment>', ++$index, $userId),
+                    \sprintf('<comment>3-%s. Crawl user(%s) home snapshot</comment>', ++$index, $userId),
                     function () use (&$snapshot, $page, $userId): void {
                         $snapshot = retry($times = 3, function (int $attempts) use ($times, $page, $userId): array {
                             1 < $attempts and $this->components->warn(\sprintf(
@@ -111,37 +109,42 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
             })
             ->tap(function (Collection $snapshots): void {
                 $this->components->task(
-                    '<comment>3. Print crawled user home snapshots</comment>',
+                    '<comment>4. Print crawled user home snapshots</comment>',
                     fn (): null => $this->printCrawledUserHomeSnapshots($snapshots)
                 );
             })
             ->tap(function (Collection $snapshots): void {
                 $this->components->task(
-                    '<comment>4. Create crawled user home snapshots</comment>',
+                    '<comment>5. Create crawled user home snapshots</comment>',
                     fn (): null => $this->createCrawledUserHomeSnapshots($snapshots)
                 );
             })
             ->tap(function (Collection $snapshots): void {
                 $this->components->task(
-                    '<comment>5. Update crawled user home snapshots</comment>',
+                    '<comment>6. Update crawled user home snapshots</comment>',
                     fn (): null => $this->updateCrawledUserHomeSnapshots($snapshots)
                 );
             })
             ->tap(function (Collection $snapshots): void {
                 $this->components->task(
-                    '<comment>6. Optimize user home screenshots</comment>',
+                    '<comment>7. Optimize user home screenshots</comment>',
                     fn (): null => $this->optimizeUserHomeScreenshots($snapshots)
                 );
             })
             ->tap(function (Collection $snapshots): void {
                 $this->components->task(
-                    '<comment>7. Commit user home snapshots and screenshots</comment>',
+                    '<comment>8. Commit user home snapshots and screenshots</comment>',
                     fn (): null => $this->commitUserHomeSnapshotsAndScreenshots($snapshots)
                 );
             })
-            ->tap(function () use ($timer): void {
-                // $this->components->success((new ResourceUsageFormatter)->resourceUsageSinceStartOfRequest());
-                $this->components->success((new ResourceUsageFormatter)->resourceUsage($timer->stop()));
+            ->tap(function (): void {
+                $this->components->task(
+                    '<comment>9. Close process aware browser</comment>',
+                    fn (): null => $this->closeProcessAwareBrowser()
+                );
+            })
+            ->tap(function (): void {
+                $this->components->success((new ResourceUsageFormatter)->resourceUsageSinceStartOfRequest());
             });
     }
 
@@ -166,12 +169,6 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
                 );
             });
         }
-
-        $this->processAwareBrowser = (new BrowserFactory)->createBrowser([
-            'headless' => running_in_github_action() || !$this->output->isVeryVerbose(),
-            // 'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
-            'windowSize' => \PHP_OS_FAMILY === 'Darwin' ? [/* Mac */ 1920, 1080] : [/* Linux */ 1280, 1024],
-        ]);
     }
 
     #[\Override]
@@ -181,6 +178,16 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
             'user-id' => 'list',
             'user-id.*' => 'required|integer|min:1|distinct',
         ];
+    }
+
+    private function createProcessAwareBrowser(): ProcessAwareBrowser
+    {
+        return $this->processAwareBrowser ??= (new BrowserFactory)->createBrowser([
+            'headless' => running_in_github_action() || !$this->output->isVeryVerbose(),
+            // 'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
+            'debugLogger' => $this->consoleLogger(),
+            'windowSize' => \PHP_OS_FAMILY === 'Darwin' ? [/* Mac */ 1920, 1080] : [/* Linux */ 1280, 1024],
+        ]);
     }
 
     /**
@@ -435,9 +442,21 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
                     ->implode(' ')
             ),
             'git status',
+            'git diff --cached',
             'git commit --message "chore: update NetEase CloudMusic storage" --no-verify --signoff',
             'git push',
         ]), output: $output);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function closeProcessAwareBrowser(): void
+    {
+        if (isset($this->processAwareBrowser)) {
+            $this->processAwareBrowser->close();
+            // unset($this->processAwareBrowser);
+        }
     }
 
     private function waitLoad(int $milliseconds = self::WAIT_DEFAULT_LOAD_MILLISECONDS): void
