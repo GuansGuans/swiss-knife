@@ -180,6 +180,9 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
         ];
     }
 
+    /**
+     * @noinspection StaticInvocationViaThisInspection
+     */
     private function createProcessAwareBrowser(): ProcessAwareBrowser
     {
         return $this->processAwareBrowser ??= (new BrowserFactory)->createBrowser([
@@ -187,6 +190,10 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
             // 'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
             'debugLogger' => $this->consoleLogger(),
             'windowSize' => \PHP_OS_FAMILY === 'Darwin' ? [/* Mac */ 1920, 1080] : [/* Linux */ 1280, 1024],
+            'customFlags' => [
+                '--disable-extensions',
+                '--disable-component-extensions-with-background-pages',
+            ],
         ]);
     }
 
