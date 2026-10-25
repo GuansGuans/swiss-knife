@@ -187,12 +187,14 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
     {
         return $this->processAwareBrowser ??= (new BrowserFactory)->createBrowser([
             'headless' => running_in_github_action() || !$this->output->isVeryVerbose(),
-            // 'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
             'debugLogger' => $this->consoleLogger(),
+            'disableNotifications' => true,
             'windowSize' => \PHP_OS_FAMILY === 'Darwin' ? [/* Mac */ 1920, 1080] : [/* Linux */ 1280, 1024],
             'customFlags' => [
-                '--disable-extensions',
                 '--disable-component-extensions-with-background-pages',
+                '--disable-component-update',
+                '--disable-default-apps',
+                '--disable-extensions',
             ],
         ]);
     }
