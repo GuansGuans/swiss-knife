@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use SebastianBergmann\Timer\ResourceUsageFormatter;
+use SebastianBergmann\Timer\Timer;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -75,10 +76,11 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      * @throws \JsonException
      */
-    public function handle(): void
+    public function handle(Timer $timer): void
     {
         collect($this->option('user-id'))
-            ->tap(function (): void {
+            ->tap(function () use ($timer): void {
+                $timer->start();
                 $this->newLine();
             })
             ->tap(function () use (&$page): void {
@@ -93,7 +95,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                 $this->components->task(
                     \sprintf('<comment>2-%s. Crawl user(%s) home snapshot</comment>', ++$index, $userId),
                     function () use (&$snapshot, $page, $userId): void {
-                        $snapshot = retry($times = 5, function (int $attempts) use ($times, $page, $userId): array {
+                        $snapshot = retry($times = 3, function (int $attempts) use ($times, $page, $userId): array {
                             1 < $attempts and $this->components->warn(\sprintf(
                                 "Attempt %d/$times failed; retrying attempt $attempts/$times...",
                                 $attempts - 1,
@@ -136,8 +138,9 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                     fn (): null => $this->commitUserHomeSnapshotsAndScreenshots($snapshots)
                 );
             })
-            ->tap(function (): void {
-                $this->components->success((new ResourceUsageFormatter)->resourceUsageSinceStartOfRequest());
+            ->tap(function () use ($timer): void {
+                // $this->components->success((new ResourceUsageFormatter)->resourceUsageSinceStartOfRequest());
+                $this->components->success((new ResourceUsageFormatter)->resourceUsage($timer->stop()));
             });
     }
 
@@ -145,10 +148,10 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         if (empty($this->option('user-id'))) {
-            $input->setOption('user-id', config('services.net_ease_cloud_music.user_ids'));
+            $this->input->setOption('user-id', config('services.net_ease_cloud_music.user_ids'));
         }
 
-        if ($output->isVeryVerbose()) {
+        if ($this->output->isVeryVerbose()) {
             collect(config('exception-notify.channels'))->each(static function (array $configuration, string $name): void {
                 if ('notify' !== ($configuration['driver'] ?? $name)) {
                     return;
@@ -164,8 +167,8 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
         }
 
         $this->processAwareBrowser = (new BrowserFactory)->createBrowser([
-            'headless' => running_in_github_action() || !$output->isDebug(),
-            // 'debugLogger' => $output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
+            'headless' => running_in_github_action() || !$this->output->isVeryVerbose(),
+            // 'debugLogger' => $this->output->isDebug() ? $this->consoleLogger() : Log::channel('null'),
             'windowSize' => \PHP_OS_FAMILY === 'Darwin' ? [/* Mac */ 1920, 1080] : [/* Linux */ 1280, 1024],
         ]);
     }
@@ -371,7 +374,7 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
      */
     private function optimizeUserHomeScreenshots(Collection $snapshots): void
     {
-        $this->call('optimize:image', [
+        $this->{$this->output->isVeryVerbose() ? 'call' : 'callSilent'}('optimize:image', [
             '--path' => $snapshots->pluck('screenshot_path')->map('net_ease_cloud_music_path')->all(),
             '--ansi' => true,
             // '--silent' => true,
@@ -382,6 +385,8 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
 
     /**
      * @param Collection<int, array<string, scalar>> $snapshots
+     *
+     * @noinspection StaticInvocationViaThisInspection
      */
     private function commitUserHomeSnapshotsAndScreenshots(Collection $snapshots): void
     {
@@ -389,13 +394,30 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
             return;
         }
 
-        $currentBranch = Process::run('git branch --show-current')->throw()->output();
+        // $currentBranch = Process::run('git branch --show-current')->throw()->output();
+        $currentBranch = $this->processHelperMustRun('git branch --show-current')->getOutput();
 
         if (!str($currentBranch)->trim()->is('main')) {
             return;
         }
 
-        Process::run(implode(' && ', [
+        // Process::run(implode(' && ', [
+        //     'git config user.name "guanguans"',
+        //     'git config user.email "ityaozm@gmail.com"',
+        //     'git pull --rebase --autostash',
+        //     \sprintf(
+        //         'git add --force %s',
+        //         $snapshots
+        //             ->pluck('screenshot_path')->map('net_ease_cloud_music_path')
+        //             ->push(net_ease_cloud_music_path('database/'))
+        //             ->implode(' ')
+        //     ),
+        //     'git status',
+        //     'git commit --message "chore: update NetEase CloudMusic storage" --no-verify --signoff',
+        //     'git push',
+        // ]))->throw();
+
+        $this->processHelperMustRun(implode(' && ', [
             'git config user.name "guanguans"',
             'git config user.email "ityaozm@gmail.com"',
             'git pull --rebase --autostash',
@@ -406,9 +428,10 @@ final class NetEaseCloudMusicCommand extends AbstractCommand
                     ->push(net_ease_cloud_music_path('database/'))
                     ->implode(' ')
             ),
+            'git status',
             'git commit --message "chore: update NetEase CloudMusic storage" --no-verify --signoff',
             'git push',
-        ]))->throw();
+        ]));
     }
 
     private function waitLoad(int $milliseconds = self::WAIT_DEFAULT_LOAD_MILLISECONDS): void
