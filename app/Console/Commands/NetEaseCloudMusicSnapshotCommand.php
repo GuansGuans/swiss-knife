@@ -423,7 +423,7 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
         //     'git push',
         // ]))->throw();
         $this->output->isVeryVerbose() and $this->newLine();
-        $this->processHelperMustRun(implode(' && ', [
+        $this->processHelperMustRun(implode(" &&\n", [
             'git config user.name "guanguans"',
             'git config user.email "ityaozm@gmail.com"',
             'git pull --rebase --autostash',
