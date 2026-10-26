@@ -190,11 +190,15 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
             'debugLogger' => $this->consoleLogger(),
             'disableNotifications' => true,
             'windowSize' => \PHP_OS_FAMILY === 'Darwin' ? [/* Mac */ 1920, 1080] : [/* Linux */ 1280, 1024],
+            'excludedSwitches' => [
+                '--disable-features=ChromeWhatsNewUI',
+            ],
             'customFlags' => [
                 '--disable-component-extensions-with-background-pages',
                 '--disable-component-update',
                 '--disable-default-apps',
                 '--disable-extensions',
+                '--disable-features=ChromeWhatsNewUI,MediaRouter',
             ],
         ]);
     }
