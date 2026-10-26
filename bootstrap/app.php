@@ -301,22 +301,35 @@ return Application::configure(\dirname(__DIR__))
     ->booting(static function (Application $application): void {
         /**
          * @see \Guanguans\LaravelExceptionNotify\Collectors\ApplicationCollector
+         * @see \Guanguans\LaravelExceptionNotify\Collectors\RequestBasicCollector
          * @see \Illuminate\Log\Context\ContextServiceProvider::boot()
          */
         Context::add([
-            'trace-id' => TRACE_ID,
-            'php-version' => \PHP_VERSION,
-            'php-interface' => \PHP_SAPI,
-            'laravel-version' => $application->version(),
-            'running-in-console' => $application->runningInConsole(),
+            'Trace Id' => TRACE_ID,
+            // 'Time' => Date::now()->format('Y-m-d H:i:s'),
+            'Name' => config('app.name'),
+            'Version' => $application->version(),
+            'PHP Version' => \PHP_VERSION,
+            'Php Interface' => \PHP_SAPI,
+            'Environment' => $application->environment(),
+            'In Console' => $application->runningInConsole(),
+            'Debug Mode' => $application->hasDebugModeEnabled(),
+            'Maintenance Mode' => $application->isDownForMaintenance(),
+            'Timezone' => config('app.timezone'),
+            'Locale' => config('app.locale'),
         ]);
 
         $application->runningInConsole() or Context::add([
-            'user-id' => request()->user()?->id,
-            'url' => request()->url(),
-            'ip' => request()->ip(),
-            'method' => request()->method(),
-            'action' => request()->route()?->getActionName(),
+            'User Id' => request()->user()?->id,
+            'URL' => request()->url(),
+            'IP' => request()->ip(),
+            'Method' => request()->method(),
+            'Controller Action' => request()->route()?->getActionName(),
+            // 'Command' => null,
+            // 'Memory' => Number::fileSize(memory_get_peak_usage(true)),
+            // 'Duration' => blank(
+            //     $startTime = \defined('LARAVEL_START') ? LARAVEL_START : request()->server('REQUEST_TIME_FLOAT')
+            // ) ? 'Unknown' : humans_milliseconds((microtime(true) - (float) $startTime) * 1000),
         ]);
     })
     ->booting(static function (Application $application): void {
@@ -513,7 +526,7 @@ return Application::configure(\dirname(__DIR__))
     ->withSchedule(static function (Schedule $schedule): void {
         // $schedule->command('inspire')->daily()/* ->atRandom('07:15', '11:42') */ /* ->doNotMonitor() */ /* ->ddExpression() */ ->dailyAppendOutputTo()->runInBackground()->withoutOverlapping(60);
         $schedule->command('telescope:prune')->everyThirtyMinutes()->skip(app()->isProduction())->dailyAppendOutputTo()->withoutOverlapping();
-        // $schedule->command(NetEaseCloudMusicSnapshotCommand::class)->everyThirtyMinutes()->dailyAppendOutputTo()->withoutOverlapping();
+        $schedule->command(NetEaseCloudMusicSnapshotCommand::class)->everyThirtyMinutes()->when(app()->isProduction())->dailyAppendOutputTo()->withoutOverlapping();
     })
     ->withMiddleware(static function (Middleware $middleware): void {})
     ->withExceptions(static function (Exceptions $exceptions): void {

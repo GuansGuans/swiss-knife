@@ -1,0 +1,23 @@
+name: mirror
+
+on:
+  push:
+  workflow_dispatch:
+  schedule: # UTC 17:30 -> CST (China) 1:30 see https://datetime360.com/cn/utc-cst-china-time/
+    - cron: '30 17 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  to_gitee:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url: git@gitee.com:GuansGuans/swiss-knife.git
+          ssh_private_key: ${{ secrets.GITEE_SSH_PRIVATE_KEY }}
