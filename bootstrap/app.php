@@ -251,7 +251,11 @@ return Application::configure(\dirname(__DIR__))
             );
         });
     })
-    ->booting(static function (): void {
+    ->booting(static function (Application $application): void {
+        if (running_in_github_action() && !$application->isProduction()) {
+            return;
+        }
+
         /**
          * @see https://masteringlaravel.io/daily/2024-11-13-how-can-you-make-sure-the-environment-is-configured-correctly
          */
@@ -531,7 +535,7 @@ return Application::configure(\dirname(__DIR__))
     ->withSchedule(static function (Schedule $schedule): void {
         // $schedule->command('inspire')->daily()/* ->atRandom('07:15', '11:42') */ /* ->doNotMonitor() */ /* ->ddExpression() */ ->dailyAppendOutputTo()->runInBackground()->withoutOverlapping(60);
         $schedule->command('telescope:prune')->everyThirtyMinutes()->skip(app()->isProduction())->dailyAppendOutputTo()->withoutOverlapping();
-        $schedule->command(NetEaseCloudMusicSnapshotCommand::class)->everyThirtyMinutes()->when(app()->isProduction())->dailyAppendOutputTo()->withoutOverlapping();
+        $schedule->command(NetEaseCloudMusicSnapshotCommand::class)->everyThirtyMinutes()->when(running_in_github_action() && app()->isProduction())->dailyAppendOutputTo()->withoutOverlapping();
     })
     ->withMiddleware(static function (Middleware $middleware): void {})
     ->withExceptions(static function (Exceptions $exceptions): void {
