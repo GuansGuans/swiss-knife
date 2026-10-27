@@ -29,7 +29,6 @@ use HeadlessChromium\PageUtils\ResponseWaiter;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
@@ -218,12 +217,11 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
     private function loginNetEaseCloudMusic(): Page
     {
         $page = $this->processAwareBrowser->createPage();
-        $cookiesFileOrJson = config('services.net_ease_cloud_music.cookies');
-        $responseWaiter = $page->setCookies(new CookiesCollection(
-            is_file($cookiesFileOrJson)
-            ? File::json($cookiesFileOrJson)
-            : json_decode($cookiesFileOrJson, true, flags: \JSON_THROW_ON_ERROR)
-        ));
+        $responseWaiter = $page->setCookies(new CookiesCollection(json_decode(
+            config('services.net_ease_cloud_music.cookies'),
+            true,
+            flags: \JSON_THROW_ON_ERROR
+        )));
         \assert($responseWaiter instanceof ResponseWaiter);
         $responseWaiter->await();
         // $page->navigate(self::LOGIN_URL)->waitForNavigation();

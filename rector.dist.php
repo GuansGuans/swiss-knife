@@ -20,7 +20,6 @@ use Guanguans\RectorRules\Rector\Array_\SortListItemOfSameScalarTypeRector;
 use Guanguans\RectorRules\Rector\File\AddNoinspectionDocblockToFileFirstStmtRector;
 use Guanguans\RectorRules\Rector\FunctionLike\RenameGarbageParamNameRector;
 use Guanguans\RectorRules\Rector\Name\RenameToConventionalCaseNameRector;
-use Guanguans\RectorRules\Rector\Scalar\StringToClassConstantOfRequestOptionsRector;
 use Guanguans\RectorRules\Set\SetList;
 use Pest\Rector\Rules\ChainExpectCallsRector;
 use Pest\Rector\Set\PestSetList;
@@ -74,9 +73,9 @@ return RectorConfig::configure()
         ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [
             // __DIR__.'/app/Support/Mixin/',
         ],
-        CompleteDynamicPropertiesRector::class => [
-            __DIR__.'/app/Support/Mixin/',
-        ],
+        // CompleteDynamicPropertiesRector::class => [
+        //     __DIR__.'/app/Support/Mixin/',
+        // ],
         ModelCastsPropertyToCastsMethodRector::class => [
             __DIR__.'/app/Models/NetEaseCloudMusicUserHomeSnapshot.php',
         ],
@@ -107,10 +106,6 @@ return RectorConfig::configure()
         StringClassNameToClassConstantRector::class => [
             __DIR__.'/bootstrap/app.php',
             __DIR__.'/tests/Arch/',
-        ],
-        StringToClassConstantOfRequestOptionsRector::class => [
-            __DIR__.'/bootstrap/app.php',
-            __DIR__.'/config/telescope.php',
         ],
         TypeHintTappableCallRector::class => [
             __DIR__.'/bootstrap/app.php',
@@ -143,7 +138,7 @@ return RectorConfig::configure()
         typeDeclarations: true,
         typeDeclarationDocblocks: true,
         privatization: true,
-        naming: true,
+        // naming: true,
         // namedArgs: true,
         carbon: true,
         rectorPreset: true,

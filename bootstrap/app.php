@@ -129,7 +129,6 @@ return Application::configure(\dirname(__DIR__))
                     'Laravel\\Tinker\\TinkerServiceProvider',
                     'Msamgan\\LaravelEnvKeysChecker\\LaravelEnvKeysCheckerServiceProvider',
                     'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
-                    'Opcodes\\LogViewer\\LogViewerServiceProvider',
                     'Orangehill\\Iseed\\IseedServiceProvider',
                     'Pest\\Laravel\\PestServiceProvider',
                     'Reliese\\Coders\\CodersServiceProvider',
