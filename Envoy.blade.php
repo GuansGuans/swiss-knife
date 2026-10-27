@@ -1,42 +1,26 @@
 @servers(['local' => 'localhost'])
 
 @setup
+    $localCwd = '/Users/yaozm/Documents/wwwroot/swiss-knife/';
     $localPhp = '/opt/homebrew/opt/php@8.5/bin/php';
     $localComposer = "$localPhp /opt/homebrew/bin/composer --no-interaction --ansi -v";
     $localArtisan = "$localPhp artisan --ansi -v";
 @endsetup
 
-@task('local', ['on' => ['local'], 'parallel' => false])
-    cd /Users/yaozm/Documents/wwwroot/clothing-gm
-    {{ $localArtisan }} clear:all
-    {{ $localComposer }} dump-autoload --optimize
-    {{ $localArtisan }} schedule-monitor:sync
-
-    {{ $localArtisan }} opcache:clear
-    {{ $localArtisan }} opcache:config
-    {{ $localArtisan }} opcache:status
-    {{ $localArtisan }} opcache:compile
+@task('local-local', ['on' => ['local'], 'parallel' => false])
+    cd {{ $localCwd }}
+    sed -i '' -e 's/^APP_DEBUG=false/APP_DEBUG=true/' -e 's/^APP_ENV=production/APP_ENV=local/' .env
+    {{ $localComposer }} install
+    {{ $localComposer }} app:install
+    {{ $localArtisan }} optimize:clear
+    {{ $localArtisan }} about
 @endtask
 
-@task('testing', ['on' => ['testing'], 'confirm' => true, 'parallel' => false])
-    cd /data/vhosts/gmtools-test.dreams.howanjoy.com/
-    {{ $testingArtisan }} down --redirect=/ --secret='ba401813-40a0-42d2-bdd2-1c7f55c70ccb'
-    git checkout -- .
-    git switch testing
-    git pull origin testing
-    {{-- git pull gitee testing --}}
-    {{ $testingComposer }} install --no-interaction --prefer-dist --optimize-autoloader --no-dev
-    {{ $testingArtisan }} clear:all --force
-    {{ $testingArtisan }} optimize:all --force
-    {{ $testingArtisan }} up
-
-    {{ $testingArtisan }} schedule-monitor:sync
-    {{ $testingArtisan }} queue:restart
-
-    {{ $testingArtisan }} opcache:clear
-    {{ $testingArtisan }} opcache:config
-    {{ $testingArtisan }} opcache:status
-    {{ $testingArtisan }} opcache:compile
-
-    {{ $testingArtisan }} health:check --except=*Queue --except=*SqlMode --except=*SqlSafeUpdates
+@task('local-production', ['on' => ['local'], 'confirm' => true, 'parallel' => false])
+    cd {{ $localCwd }}
+    sed -i '' -e 's/^APP_DEBUG=true/APP_DEBUG=false/' -e 's/^APP_ENV=local/APP_ENV=production/' .env
+    {{ $localComposer }} install --no-dev
+    {{ $localComposer }} app:install
+    {{ $localArtisan }} optimize
+    {{ $localArtisan }} about
 @endtask

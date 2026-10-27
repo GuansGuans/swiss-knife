@@ -52,6 +52,7 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
         \JSON_UNESCAPED_LINE_TERMINATORS |
         \JSON_UNESCAPED_SLASHES |
         \JSON_UNESCAPED_UNICODE;
+    private const int RETRY_TIMES = 3;
     private const int WAIT_DEFAULT_LOAD_MILLISECONDS = 3 * 1000;
     private const int WAIT_FIRST_LOAD_MILLISECONDS = 5 * 1000;
 
@@ -68,7 +69,7 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
     }
 
     /**
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function handle(): void
     {
@@ -79,7 +80,12 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
             ->tap(function (): void {
                 $this->components->task(
                     '<comment>1. Create process aware browser</comment>',
-                    fn (): ProcessAwareBrowser => $this->createProcessAwareBrowser()
+                    function (): void {
+                        retry(self::RETRY_TIMES, function (int $attempts): void {
+                            $this->warnRetry($attempts, self::RETRY_TIMES);
+                            $this->createProcessAwareBrowser();
+                        });
+                    }
                 );
             })
             ->tap(function () use (&$page): void {
@@ -94,11 +100,8 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
                 $this->components->task(
                     \sprintf('<comment>3-%s. Crawl user(%s) home snapshot</comment>', ++$index, $userId),
                     function () use (&$snapshot, $page, $userId): void {
-                        $snapshot = retry($times = 3, function (int $attempts) use ($times, $page, $userId): array {
-                            1 < $attempts and $this->components->warn(\sprintf(
-                                "Attempt %d/$times failed; retrying attempt $attempts/$times...",
-                                $attempts - 1,
-                            ));
+                        $snapshot = retry(self::RETRY_TIMES, function (int $attempts) use ($page, $userId): array {
+                            $this->warnRetry($attempts, self::RETRY_TIMES);
 
                             return $this->crawlUserHomeSnapshot($page, $userId);
                         });
@@ -169,6 +172,8 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
                 );
             });
         }
+
+        $this->validator()->validate();
     }
 
     #[\Override]
@@ -183,9 +188,9 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
     /**
      * @noinspection StaticInvocationViaThisInspection
      */
-    private function createProcessAwareBrowser(): ProcessAwareBrowser
+    private function createProcessAwareBrowser(): void
     {
-        return $this->processAwareBrowser ??= (new BrowserFactory)->createBrowser([
+        $this->processAwareBrowser ??= (new BrowserFactory)->createBrowser([
             'headless' => running_in_github_action() || !$this->output->isVeryVerbose(),
             'debugLogger' => $this->consoleLogger(),
             'disableNotifications' => true,
@@ -470,6 +475,14 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
             $this->processAwareBrowser->close();
             // unset($this->processAwareBrowser);
         }
+    }
+
+    private function warnRetry(int $attempts, int $times): void
+    {
+        1 < $attempts and $this->components->warn(\sprintf(
+            "Attempt %d/$times failed; retrying attempt $attempts/$times...",
+            $attempts - 1,
+        ));
     }
 
     private function waitLoad(int $milliseconds = self::WAIT_DEFAULT_LOAD_MILLISECONDS): void

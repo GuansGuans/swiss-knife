@@ -35,11 +35,11 @@ jobs:
   net-ease-cloud-music:
     name: net-ease-cloud-music
     runs-on: ubuntu-latest
-    # env:
-    #   EXCEPTION_NOTIFY_NTFY_TOPIC: ${{ secrets.EXCEPTION_NOTIFY_NTFY_TOPIC }}
-    #   EXCEPTION_NOTIFY_WPUSH_APIKEY: ${{ secrets.EXCEPTION_NOTIFY_WPUSH_APIKEY }}
-    #   NET_EASE_CLOUD_MUSIC_COOKIES: ${{ secrets.NET_EASE_CLOUD_MUSIC_COOKIES }}
-    #   NET_EASE_CLOUD_MUSIC_USER_IDS: ${{ secrets.NET_EASE_CLOUD_MUSIC_USER_IDS }}
+    env:
+      EXCEPTION_NOTIFY_NTFY_TOPIC: ${{ secrets.EXCEPTION_NOTIFY_NTFY_TOPIC }}
+      EXCEPTION_NOTIFY_WPUSH_APIKEY: ${{ secrets.EXCEPTION_NOTIFY_WPUSH_APIKEY }}
+      NET_EASE_CLOUD_MUSIC_COOKIES: ${{ secrets.NET_EASE_CLOUD_MUSIC_COOKIES }}
+      # NET_EASE_CLOUD_MUSIC_USER_IDS: ${{ secrets.NET_EASE_CLOUD_MUSIC_USER_IDS }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -89,7 +89,7 @@ jobs:
           # sudo apt-get update && sudo apt-get install -y fonts-noto-cjk && sudo fc-cache -f && fc-match sans:lang=zh-cn
           # sudo apt-get update && sudo apt-get install -y jpegoptim optipng pngquant gifsicle webp libavif-bin && sudo npm install -g svgo
           sudo apt-get install --no-install-recommends -y fonts-noto-cjk optipng pngquant && sudo fc-cache -f && fc-match sans:lang=zh-cn
-        timeout-minutes: 10
+        timeout-minutes: 20
 
       - name: Run net-ease-cloud-music:snapshot
         run: |

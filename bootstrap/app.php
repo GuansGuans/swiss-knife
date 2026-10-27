@@ -29,9 +29,11 @@ use App\Support\VarDumper\ServerDumper;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\CarbonInterval;
+use Guanguans\LaravelExceptionNotify\Facades\ExceptionNotify;
 use Guanguans\LaravelExceptionNotify\Pipes;
 use Guanguans\LaravelExceptionNotify\Template;
 use Guanguans\Notify;
+use Illuminate\Console\Events\ScheduledTaskFailed;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
@@ -167,7 +169,7 @@ return Application::configure(\dirname(__DIR__))
                 'except' => ['App\Support\Mixin\*'],
             ],
             'services.net_ease_cloud_music' => [
-                'cookies' => env('NET_EASE_CLOUD_MUSIC_COOKIES', net_ease_cloud_music_path('cookies.json')),
+                'cookies' => env('NET_EASE_CLOUD_MUSIC_COOKIES'),
                 'user_ids' => env_explode('NET_EASE_CLOUD_MUSIC_USER_IDS', [/* 284761234, */ 13655983778]),
             ],
         ]);
@@ -213,10 +215,7 @@ return Application::configure(\dirname(__DIR__))
             'exception-notify.environments' => ['production'],
             'exception-notify.job.connection' => 'sync',
             'exception-notify.channels.stack.channels' => ['log', 'ntfy', 'wPush'],
-            'exception-notify.channels.ntfy.message.options.topic' => env(
-                'EXCEPTION_NOTIFY_NTFY_TOPIC',
-                'swiss-knife-exception-notify'
-            ),
+            'exception-notify.channels.ntfy.message.options.topic' => env('EXCEPTION_NOTIFY_NTFY_TOPIC'),
             'exception-notify.channels.ntfy.message.options.markdown' => true,
             'exception-notify.channels.ntfy.pipes' => [
                 Pipes\SprintfMarkdownPipe::class,
@@ -226,7 +225,7 @@ return Application::configure(\dirname(__DIR__))
                 'driver' => 'notify',
                 'authenticator' => [
                     'class' => Notify\WPush\Authenticator::class,
-                    'apikey' => env('EXCEPTION_NOTIFY_WPUSH_APIKEY', 'WPUSHXtvzuCujtOcL1cFkF1NC9aefsji'),
+                    'apikey' => env('EXCEPTION_NOTIFY_WPUSH_APIKEY'),
                 ],
                 'client' => [
                     'class' => Notify\WPush\Client::class,
@@ -245,14 +244,20 @@ return Application::configure(\dirname(__DIR__))
                 ],
             ],
         ]);
+        Event::listen(ScheduledTaskFailed::class, static function (ScheduledTaskFailed $scheduledTaskFailed): void {
+            /** @see \Illuminate\Console\Scheduling\ScheduleRunCommand::runEvent() */
+            ExceptionNotify::skipWhen(
+                static fn (Throwable $throwable): bool => $throwable === $scheduledTaskFailed->exception
+            );
+        });
     })
     ->booting(static function (): void {
         /**
          * @see https://masteringlaravel.io/daily/2024-11-13-how-can-you-make-sure-the-environment-is-configured-correctly
          */
-        // Env::getOrFail('EXCEPTION_NOTIFY_NTFY_TOPIC');
-        // Env::getOrFail('EXCEPTION_NOTIFY_WPUSH_APIKEY');
-        // Env::getOrFail('NET_EASE_CLOUD_MUSIC_COOKIES');
+        Env::getOrFail('EXCEPTION_NOTIFY_NTFY_TOPIC');
+        Env::getOrFail('EXCEPTION_NOTIFY_WPUSH_APIKEY');
+        Env::getOrFail('NET_EASE_CLOUD_MUSIC_COOKIES');
         // Env::getOrFail('NET_EASE_CLOUD_MUSIC_USER_IDS');
     })
     ->booting(static function (Application $application): void {
