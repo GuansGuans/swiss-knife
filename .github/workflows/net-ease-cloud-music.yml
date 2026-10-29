@@ -108,5 +108,6 @@ jobs:
   #     - uses: gautamkrishnar/keepalive-workflow@v2
 
   mirror:
+    needs: net-ease-cloud-music
     uses: ./.github/workflows/mirror.yml
     secrets: inherit
