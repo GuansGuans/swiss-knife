@@ -98,11 +98,11 @@ jobs:
           php artisan net-ease-cloud-music:snapshot --ansi ${{ inputs.verbose || '-v' }} || { [ ! -f "$log_file" ] || cat "$log_file"; false; }
           [ ! -f "$log_file" ] || cat "$log_file"
 
-      - name: Mirror to Gitee
-        uses: pixta-dev/repository-mirroring-action@v1
-        with:
-          target_repo_url: git@gitee.com:GuansGuans/swiss-knife.git
-          ssh_private_key: ${{ secrets.GITEE_SSH_PRIVATE_KEY }}
+        # - name: Mirror to Gitee
+        #   uses: pixta-dev/repository-mirroring-action@v1
+        #   with:
+        #     target_repo_url: git@gitee.com:GuansGuans/swiss-knife.git
+        #     ssh_private_key: ${{ secrets.GITEE_SSH_PRIVATE_KEY }}
 
   # keepalive-schedule-job:
   #   name: Keepalive schedule job
@@ -113,7 +113,7 @@ jobs:
   #     - uses: actions/checkout@v7
   #     - uses: gautamkrishnar/keepalive-workflow@v2
 
-  # mirror:
-  #   needs: net-ease-cloud-music
-  #   uses: ./.github/workflows/mirror.yml
-  #   secrets: inherit
+  mirror:
+    # needs: net-ease-cloud-music
+    uses: ./.github/workflows/mirror.yml
+    secrets: inherit
