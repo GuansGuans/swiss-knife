@@ -327,18 +327,23 @@ return Application::configure(\dirname(__DIR__))
             'Locale' => config('app.locale'),
         ]);
 
-        $application->runningInConsole() or Context::add([
-            'User Id' => request()->user()?->id,
-            'URL' => request()->url(),
-            'IP' => request()->ip(),
-            'Method' => request()->method(),
-            'Controller Action' => request()->route()?->getActionName(),
-            // 'Command' => null,
-            // 'Memory' => Number::fileSize(memory_get_peak_usage(true)),
-            // 'Duration' => blank(
-            //     $startTime = \defined('LARAVEL_START') ? LARAVEL_START : request()->server('REQUEST_TIME_FLOAT')
-            // ) ? 'Unknown' : humans_milliseconds((microtime(true) - (float) $startTime) * 1000),
-        ]);
+        Context::add(
+            $application->runningInConsole()
+                ? ['Command' => null, 'In Schedule' => false]
+                : [
+                    'User Id' => request()->user()?->id,
+                    'URL' => request()->url(),
+                    'IP' => request()->ip(),
+                    'Method' => request()->method(),
+                    'Controller Action' => request()->route()?->getActionName(),
+                    // 'Command' => null,
+                    // 'In Schedule' => false,
+                    // 'Memory' => Number::fileSize(memory_get_peak_usage(true)),
+                    // 'Duration' => blank(
+                    //     $startTime = \defined('LARAVEL_START') ? LARAVEL_START : request()->server('REQUEST_TIME_FLOAT')
+                    // ) ? 'Unknown' : humans_milliseconds((microtime(true) - (float) $startTime) * 1000),
+                ]
+        );
     })
     ->booting(static function (Application $application): void {
         /**
