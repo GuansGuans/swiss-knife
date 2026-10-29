@@ -98,11 +98,15 @@ jobs:
           php artisan net-ease-cloud-music:snapshot --ansi ${{ inputs.verbose || '-v' }} || { [ ! -f "$log_file" ] || cat "$log_file"; false; }
           [ ! -f "$log_file" ] || cat "$log_file"
 
-        # keepalive-schedule-job:
-        #   name: Keepalive schedule job
-        #   runs-on: ubuntu-latest
-        #   permissions:
-        #     actions: write
-        #   steps:
-        #     - uses: actions/checkout@v7
-        #     - uses: gautamkrishnar/keepalive-workflow@v2
+  # keepalive-schedule-job:
+  #   name: Keepalive schedule job
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     actions: write
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #     - uses: gautamkrishnar/keepalive-workflow@v2
+
+  mirror:
+    uses: ./.github/workflows/mirror.yml
+    secrets: inherit

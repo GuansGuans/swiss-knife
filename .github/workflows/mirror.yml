@@ -2,12 +2,14 @@ name: mirror
 
 on:
   push:
+  workflow_call:
   workflow_dispatch:
   schedule: # UTC 17:30 -> CST (China) 1:30 see https://datetime360.com/cn/utc-cst-china-time/
     - cron: '30 17 * * *'
 
 concurrency:
-  group: ${{ github.workflow }}
+  # group: ${{ github.workflow }}
+  group: mirror
   cancel-in-progress: false
 
 jobs:
