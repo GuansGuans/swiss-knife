@@ -1,0 +1,57 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2026 guanguans<ityaozm@gmail.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/GuansGuans/swiss-knife
+ */
+
+namespace App\Console\Commands;
+
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\File;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
+
+#[\Illuminate\Console\Attributes\Description('Clear logs')]
+#[\Illuminate\Console\Attributes\Signature('clear:logs {days=30 : The number of days to keep}')]
+final class ClearLogsCommand extends AbstractCommand
+{
+    public function handle(): void
+    {
+        $files = collect(
+            Finder::create()
+                ->in(storage_path('logs/'))
+                ->ignoreDotFiles(false)
+                ->ignoreUnreadableDirs(false)
+                ->ignoreVCS(true)
+                ->ignoreVCSIgnored(false)
+                ->name('*.log')
+                ->filter(
+                    fn (SplFileInfo $fileInfo): bool => preg_match('/^.*-\d{4}-\d{2}-\d{2}.log$/', $fileInfo->getBasename())
+                        && Date::createFromTimestamp($fileInfo->getMTime())->diffInDays(now()) > (int) $this->argument('days')
+                )
+                ->files()
+        )->keys()->all();
+
+        $this->components->bulletList($files);
+        File::delete($files);
+        $this->components->info($files ? 'Cleared.' : "No log files to clear that are older than {$this->argument('days')} days.");
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    #[\Override]
+    protected function rules(): array
+    {
+        return [
+            'days' => 'integer|min:3',
+        ];
+    }
+}
