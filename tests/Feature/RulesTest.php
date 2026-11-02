@@ -21,6 +21,7 @@ declare(strict_types=1);
 use App\Rules\AbstractRule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 it('can validate rules', function (): void {
     classes(
@@ -52,7 +53,7 @@ it('can validate rules', function (): void {
                                 static fn (string $ruleClass): string => $ruleClass::name()
                             )
                             ->all(),
-                        'callback' => 'callback:Illuminate\Support\Str::contains,0,foo',
+                        'callback' => \sprintf('callback:%s::contains,0,foo', Str::class),
                         'default' => 'default:default value',
                         'instanceof' => 'instanceof:stdClass',
                     ],

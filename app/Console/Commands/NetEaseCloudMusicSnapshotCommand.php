@@ -250,7 +250,7 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
         $page->screenshot()->saveToFile(net_ease_cloud_music_path($screenshotPath = \sprintf(
             "images/user-id-$userId/home-%s/%s.png",
             now()->format('Ym'),
-            now()->format('dHis')
+            now()->format('d-H-i-s')
         )));
 
         return collect([
