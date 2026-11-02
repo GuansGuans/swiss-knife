@@ -18,7 +18,6 @@ declare(strict_types=1);
  * @see https://github.com/GuansGuans/swiss-knife
  */
 
-use App\Console\Commands\ClearLogsCommand;
 use App\Console\Commands\NetEaseCloudMusicFreshCommand;
 use App\Console\Commands\NetEaseCloudMusicSnapshotCommand;
 use App\Listeners\ContextSubscriber;
@@ -542,7 +541,7 @@ return Application::configure(\dirname(__DIR__))
     ->withSchedule(static function (Schedule $schedule): void {
         $schedule->command('inspire')->everyFiveMinutes()/* ->atRandom('07:15', '11:42') */ /* ->doNotMonitor() */ /* ->ddExpression() */ ->dailyAppendOutputTo()->runInBackground()->withoutOverlapping(60);
         $schedule->command('telescope:prune')->everyThirtyMinutes()->skip(app()->isProduction())->dailyAppendOutputTo()->withoutOverlapping();
-        $schedule->command(ClearLogsCommand::class, ['days' => 3])->everyThirtyMinutes()->dailyAppendOutputTo()->withoutOverlapping();
+        $schedule->command('clear:logs 3')->everyThirtyMinutes()->dailyAppendOutputTo()->withoutOverlapping();
         $schedule->command(NetEaseCloudMusicSnapshotCommand::class)->everyThirtyMinutes()->when(running_in_github_action() && app()->isProduction())->dailyAppendOutputTo()->withoutOverlapping();
     })
     ->withMiddleware(static function (Middleware $middleware): void {})
