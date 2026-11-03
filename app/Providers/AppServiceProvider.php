@@ -20,7 +20,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Lottery;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Traits\Conditionable;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
@@ -78,12 +77,6 @@ final class AppServiceProvider extends ServiceProvider
                                     // If Xdebug is enabled, restart without it
                                     $xdebugHandler
                                         // ->setLogger(Log::channel('stderr'))
-                                        ->setLogger(Log::channel(
-                                            Lottery::odds(1, 100)
-                                                ->winner(static fn (): null => null)
-                                                ->loser(static fn (): string => 'null')
-                                                ->choose()
-                                        ))
                                         ->setPersistent()
                                         ->check();
                                 }
