@@ -94,7 +94,7 @@ final class AppServiceProvider extends ServiceProvider
                                 return [$key => $value];
                             })
                             /** @see \Illuminate\Support\Env::getOption() */
-                            ->map(static fn ($value): mixed => match (strtolower($value)) {
+                            ->map(static fn (mixed $value): mixed => match (strtolower($value)) {
                                 'true', '(true)' => true,
                                 'false', '(false)' => false,
                                 'empty', '(empty)' => '',

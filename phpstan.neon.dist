@@ -313,6 +313,7 @@ parameters:
             identifier: complexity.functionLike
             paths:
                 - app/Console/Commands/NetEaseCloudMusicSnapshotCommand.php
+                - app/Providers/AppServiceProvider.php
                 - app/Support/helpers.php
         -
             identifier: arrayFilter.strict
