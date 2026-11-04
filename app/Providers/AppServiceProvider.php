@@ -93,6 +93,14 @@ final class AppServiceProvider extends ServiceProvider
 
                                 return [$key => $value];
                             })
+                            /** @see \Illuminate\Support\Env::getOption() */
+                            ->map(static fn ($value): mixed => match (strtolower($value)) {
+                                'true', '(true)' => true,
+                                'false', '(false)' => false,
+                                'empty', '(empty)' => '',
+                                'null', '(null)' => null,
+                                default => preg_match('/\A([\'"])(.*)\1\z/', $value, $matches) ? $matches[2] : $value,
+                            })
                             ->tap(static fn (Collection $configuration): mixed => config($configuration->all()));
                     })
                 );
