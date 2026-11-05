@@ -75,8 +75,6 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Validator;
 use Laravel\Doctor\Diagnostics\ComposerAuditPasses;
 use Laravel\Doctor\Diagnostics\ComposerAutoloadIsValid;
-use Orbit\Drivers\Json as JsonDriver;
-use Orbit\Facades\Orbit;
 use Pdo\Mysql;
 use function Illuminate\Filesystem\join_paths;
 
@@ -191,25 +189,6 @@ return Application::configure(\dirname(__DIR__))
 
         config([
             'localization.align' => false,
-        ]);
-
-        Orbit::extend('json', static fn (): JsonDriver => new class extends JsonDriver {
-            /**
-             * @noinspection MissingParentCallInspection
-             * @noinspection KeysFragmentationWithArrayFunctionsInspection
-             */
-            #[Override]
-            protected function dumpContent(Model $model): string
-            {
-                return json_encode(
-                    array_filter($this->getModelAttributes($model), static fn (mixed $value): bool => null !== $value),
-                    NetEaseCloudMusicSnapshotCommand::PRETTY_JSON_OPTIONS
-                );
-            }
-        });
-        config([
-            'orbit.default' => 'json',
-            'orbit.paths.content' => net_ease_cloud_music_path('database/'),
         ]);
 
         config([

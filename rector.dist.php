@@ -35,7 +35,6 @@ use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\PHPUnit\CodeQuality\Rector\Class_\PreferPHPUnitThisCallRector;
 use Rector\ValueObject\PhpVersion;
 use RectorLaravel\Rector\ArrayDimFetch\ArrayToArrGetRector;
-use RectorLaravel\Rector\Class_\ModelCastsPropertyToCastsMethodRector;
 use RectorLaravel\Rector\Empty_\EmptyToBlankAndFilledFuncRector;
 use RectorLaravel\Rector\FuncCall\HelperFuncCallToFacadeClassRector;
 use RectorLaravel\Rector\FuncCall\RemoveDumpDataDeadCodeRector;
@@ -76,9 +75,6 @@ return RectorConfig::configure()
         // CompleteDynamicPropertiesRector::class => [
         //     __DIR__.'/app/Support/Mixin/',
         // ],
-        ModelCastsPropertyToCastsMethodRector::class => [
-            __DIR__.'/app/Models/NetEaseCloudMusicUserHomeSnapshot.php',
-        ],
         RemoveDeadInstanceOfAssertRector::class => [
             __DIR__.'/bootstrap/app.php',
         ],

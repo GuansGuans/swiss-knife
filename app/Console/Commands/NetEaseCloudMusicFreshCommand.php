@@ -13,10 +13,14 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Models\NetEaseCloudMusicUserHomeSnapshot;
 use Illuminate\Console\Prohibitable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
-use Orbit\Facades\Orbit;
+use Orbit\Commands\CacheCommand;
+use Orbit\Commands\ClearCommand;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 #[\Illuminate\Console\Attributes\Description('Fresh the NetEase CloudMusic storage directory')]
 #[\Illuminate\Console\Attributes\Signature('net-ease-cloud-music:fresh {--force : Force the operation to run when in production}')]
@@ -38,7 +42,7 @@ final class NetEaseCloudMusicFreshCommand extends AbstractCommand
             return self::FAILURE;
         }
 
-        collect([Orbit::getContentPath(), net_ease_cloud_music_path('images/')])
+        collect([config('orbit.paths.content'), net_ease_cloud_music_path('images/')])
             ->filter(static fn (string $directory): bool => File::isDirectory($directory))
             ->when($this->output->isVeryVerbose(), function (Collection $directories): void {
                 $this->components->bulletList(
@@ -47,11 +51,24 @@ final class NetEaseCloudMusicFreshCommand extends AbstractCommand
             })
             ->each(static function (string $directory): void {
                 File::deleteDirectory($directory);
+            })
+            ->tap(function (): void {
+                $this->call(ClearCommand::class);
+                // $this->call(CacheCommand::class);
             });
 
         $this->components->info('Freshened.');
 
         return self::SUCCESS;
+    }
+
+    #[\Override]
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
+        /**
+         * @see NetEaseCloudMusicUserHomeSnapshot::booting()
+         */
+        NetEaseCloudMusicUserHomeSnapshot::query();
     }
 
     #[\Override]

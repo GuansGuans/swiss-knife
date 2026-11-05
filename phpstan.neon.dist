@@ -226,7 +226,7 @@ parameters:
 #        - identifier: logicalOr.resultUnused
         - identifier: method.dynamicName
         - identifier: offsetAccess.nonOffsetAccessible
-#        - identifier: property.dynamicName
+        - identifier: property.dynamicName
 #        - identifier: public.property.unused
         - identifier: return.type
         - identifier: staticMethod.dynamicCall
@@ -273,12 +273,13 @@ parameters:
 #            paths:
 #                - app/Support/Signer/HmacSigner.php
 #                - app/Support/helpers.php
-#        -
-#            identifier: symplify.forbiddenExtendOfNonAbstractClass
-#            paths:
+        -
+            identifier: symplify.forbiddenExtendOfNonAbstractClass
+            paths:
 #                - app/Casts/CallbackSetCast.php
 #                - app/Casts/CommaSeparatedToIntegerArrayCast.php
 #                - app/Models/JWTUser.php
+                - app/Support/Orbit/Drivers/FlatJson.php
         -
             identifier: new.static
             paths:
@@ -293,6 +294,7 @@ parameters:
             identifier: method.childParameterType
             paths:
                 - app/Rules/Concerns/DataAware.php
+                - app/Support/Orbit/Drivers/Json.php
         -
             identifier: method.notFound
             paths:
