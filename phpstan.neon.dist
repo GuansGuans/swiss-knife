@@ -226,7 +226,7 @@ parameters:
 #        - identifier: logicalOr.resultUnused
         - identifier: method.dynamicName
         - identifier: offsetAccess.nonOffsetAccessible
-        - identifier: property.dynamicName
+#        - identifier: property.dynamicName
 #        - identifier: public.property.unused
         - identifier: return.type
         - identifier: staticMethod.dynamicCall
