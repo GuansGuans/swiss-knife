@@ -33,6 +33,13 @@ final class NetEaseCloudMusicUserHomeSnapshot extends AbstractModel implements O
 {
     use Orbital;
 
+    public static function orbitContentPath(): string
+    {
+        self::query(); // 触发 booting() 方法，设置 orbit.paths.content 配置项
+
+        return config('orbit.paths.content');
+    }
+
     /**
      * @see https://github.com/ryangjchandler/orbit/blob/1.x/src/Concerns/Orbital.php#L53
      * @see https://github.com/ryangjchandler/orbit/blob/1.x/src/Drivers/FileDriver.php#L86

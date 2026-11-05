@@ -439,7 +439,7 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
         //         'git add --force %s',
         //         $snapshots
         //             ->pluck('screenshot_path')->map('net_ease_cloud_music_path')
-        //             ->push(net_ease_cloud_music_path('database/'))
+        //             ->push(NetEaseCloudMusicUserHomeSnapshot::orbitContentPath())
         //             ->implode(' ')
         //     ),
         //     'git status',
@@ -455,7 +455,7 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
                 'git add --force %s',
                 $snapshots
                     ->pluck('screenshot_path')->map('net_ease_cloud_music_path')
-                    ->push(net_ease_cloud_music_path('database/'))
+                    ->push(NetEaseCloudMusicUserHomeSnapshot::orbitContentPath())
                     ->implode(' ')
             ),
             'git status',
