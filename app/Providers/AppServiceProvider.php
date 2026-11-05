@@ -93,9 +93,10 @@ final class AppServiceProvider extends ServiceProvider
                             && !app()->runningUnitTests()
                         ) {
                             $xdebugHandler = new XdebugHandler(config('app.name'));
-                            $logger = config('xdebug.logger') and $xdebugHandler->setLogger(Log::channel($logger));
-                            $mainScript = config('xdebug.main_script') and $xdebugHandler->setMainScript($mainScript);
-                            $xdebugHandler->setPersistent()->check();
+                            $logger = config('services.xdebug.logger') and $xdebugHandler->setLogger(Log::channel($logger));
+                            $mainScript = config('services.xdebug.main_script') and $xdebugHandler->setMainScript($mainScript);
+                            config('services.xdebug.persistent', true) and $xdebugHandler->setPersistent();
+                            $xdebugHandler->check();
                             unset($xdebugHandler);
                         }
                     })
