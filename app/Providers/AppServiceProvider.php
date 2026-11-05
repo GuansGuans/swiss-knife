@@ -39,6 +39,8 @@ final class AppServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
+     *
+     * @noinspection LaravelUnknownConfigKeyInspection
      */
     public function boot(Application $application): void
     {
@@ -46,13 +48,13 @@ final class AppServiceProvider extends ServiceProvider
             collect(Artisan::all())
                 ->each(
                     static fn (SymfonyCommand $symfonyCommand): SymfonyCommand => $symfonyCommand
-                        ->addOption('xdebug', null, InputOption::VALUE_NONE, 'Display xdebug output')
                         ->addOption(
                             'configuration',
                             null,
                             InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY,
-                            'Used to dynamically pass one or more configuration key-value pairs(e.g. `--configuration=app.name=guanguans` or `--configuration app.name=guanguans`).',
+                            'Set multiple given configuration values(`--configuration=app.debug=true` or `--configuration app.debug=true`)'
                         )
+                        ->addOption('xdebug', null, InputOption::VALUE_NONE, 'Allow running xdebug')
                 )
                 ->tap(
                     /**
@@ -66,42 +68,36 @@ final class AppServiceProvider extends ServiceProvider
                      * @see https://github.com/vimeo/psalm/blob/6.x/src/Psalm/Internal/Fork/PsalmRestarter.php
                      */
                     static fn (): null => Event::listen(CommandStarting::class, static function (CommandStarting $commandStarting): void {
+                        collect($commandStarting->input->getOption('configuration'))
+                            ->mapWithKeys(static function (string $configuration): array {
+                                \assert(
+                                    str_contains($configuration, '='),
+                                    "The configuration option [$configuration] must be formatted as key=value."
+                                );
+                                [$key, $value] = explode('=', $configuration, 2);
+
+                                return [$key => match (strtolower($value)) {
+                                    /** @see \Illuminate\Support\Env::getOption() */
+                                    'true', '(true)' => true,
+                                    'false', '(false)' => false,
+                                    'empty', '(empty)' => '',
+                                    'null', '(null)' => null,
+                                    default => preg_match('/\A([\'"])(.*)\1\z/', $value, $matches) ? $matches[2] : $value,
+                                }];
+                            })
+                            ->tap(static fn (Collection $configuration): mixed => config($configuration->all()));
+
                         if (
                             class_exists(XdebugHandler::class)
                             && !$commandStarting->input->hasParameterOption('--xdebug')
                             && !app()->runningUnitTests()
                         ) {
-                            $xdebugHandler = tap(
-                                new XdebugHandler(config('app.name')),
-                                static function (XdebugHandler $xdebugHandler): void {
-                                    // If Xdebug is enabled, restart without it
-                                    $xdebugHandler
-                                        // ->setLogger(Log::channel('stderr'))
-                                        ->setPersistent()
-                                        ->check();
-                                }
-                            );
+                            $xdebugHandler = new XdebugHandler(config('app.name'));
+                            $logger = config('xdebug.logger') and $xdebugHandler->setLogger(Log::channel($logger));
+                            $mainScript = config('xdebug.main_script') and $xdebugHandler->setMainScript($mainScript);
+                            $xdebugHandler->setPersistent()->check();
                             unset($xdebugHandler);
                         }
-
-                        collect($commandStarting->input->getOption('configuration'))
-                            // ->dump()
-                            ->mapWithKeys(static function (string $configuration): array {
-                                // Assert::contains($configuration, '=', "The configurable option [$configuration] must be formatted as key=value.");
-                                \assert(str_contains($configuration, '='), "The configurable option [$configuration] must be formatted as key=value.");
-                                [$key, $value] = str($configuration)->explode('=', 2)->all();
-
-                                return [$key => $value];
-                            })
-                            /** @see \Illuminate\Support\Env::getOption() */
-                            ->map(static fn (mixed $value): mixed => match (strtolower($value)) {
-                                'true', '(true)' => true,
-                                'false', '(false)' => false,
-                                'empty', '(empty)' => '',
-                                'null', '(null)' => null,
-                                default => preg_match('/\A([\'"])(.*)\1\z/', $value, $matches) ? $matches[2] : $value,
-                            })
-                            ->tap(static fn (Collection $configuration): mixed => config($configuration->all()));
                     })
                 );
         });
