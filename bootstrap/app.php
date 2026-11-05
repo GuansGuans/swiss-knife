@@ -191,6 +191,10 @@ return Application::configure(\dirname(__DIR__))
             'localization.align' => false,
         ]);
 
+        // config([
+        //     'orbit.paths.content' => net_ease_cloud_music_path('content/'),
+        // ]);
+
         config([
             'exception-notify.environments' => ['production'],
             'exception-notify.job.connection' => 'sync',

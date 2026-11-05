@@ -48,27 +48,13 @@ final class NetEaseCloudMusicUserHomeSnapshot extends AbstractModel implements O
     #[\Override]
     public function getAttributes(): array
     {
-        $isFromToOrbitAttributes = 'toOrbitAttributes' === (debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'] ?? null);
-
-        if (!$isFromToOrbitAttributes) {
-            return parent::getAttributes();
+        if ('toOrbitAttributes' === (debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'] ?? null)) {
+            // We need to refresh the model so that we can get all of the columns
+            // and default values from the SQLite cache.
+            $this->refresh();
         }
 
-        // We need to refresh the model so that we can get all of the columns
-        // and default values from the SQLite cache.
-        $this->refresh();
-
-        return collect(parent::getAttributes())
-            ->map(function (mixed $_, string $key): mixed {
-                $value = $this->{$key};
-
-                if ($value instanceof \BackedEnum) {
-                    return $value->value;
-                }
-
-                return $value;
-            })
-            ->toArray();
+        return parent::getAttributes();
     }
 
     #[\Override]
