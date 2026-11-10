@@ -1,0 +1,19 @@
+app/Console/Commands/NetEaseCloudMusicFreshCommand.php
+  h_f374ed0b3ee0f5 67
+app/Console/Commands/NetEaseCloudMusicSnapshotCommand.php
+  h_f374ed0b3ee0f5 425,463
+  h_f374ed0b3ee0f5 464-465
+app/Console/Commands/CheckServiceProviderCommand.php
+  h_f374ed0b3ee0f5 50-53,55-58,112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "fc5cd5fc5c1ffd1e5eebc4104b173c7b1ad63774",
+  "prompts": {},
+  "humans": {
+    "h_f374ed0b3ee0f5": {
+      "author": "guanguans <ityaozm@gmail.com>"
+    }
+  }
+}
