@@ -34,11 +34,11 @@ final class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
         $isLocal = $this->app->environment('local');
 
         Telescope::filter(static fn (IncomingEntry $incomingEntry): bool => $isLocal
-                   || $incomingEntry->isReportableException()
-                   || $incomingEntry->isFailedRequest()
-                   || $incomingEntry->isFailedJob()
-                   || $incomingEntry->isScheduledTask()
-                   || $incomingEntry->hasMonitoredTag());
+           || $incomingEntry->isReportableException()
+           || $incomingEntry->isFailedRequest()
+           || $incomingEntry->isFailedJob()
+           || $incomingEntry->isScheduledTask()
+           || $incomingEntry->hasMonitoredTag());
     }
 
     /**

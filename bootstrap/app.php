@@ -34,6 +34,7 @@ use Guanguans\LaravelExceptionNotify\Pipes;
 use Guanguans\LaravelExceptionNotify\Template;
 use Guanguans\Notify;
 use Illuminate\Console\Events\ScheduledTaskFailed;
+use Illuminate\Console\Scheduling\Event as SchedulingEvent;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
@@ -76,6 +77,7 @@ use Illuminate\Validation\Validator;
 use Laravel\Doctor\Diagnostics\ComposerAuditPasses;
 use Laravel\Doctor\Diagnostics\ComposerAutoloadIsValid;
 use Pdo\Mysql;
+use Symfony\Component\Console\Input\ArgvInput;
 use function Illuminate\Filesystem\join_paths;
 
 \defined('TRACE_ID') or \define('TRACE_ID', (string) Str::uuid7());
@@ -190,10 +192,6 @@ return Application::configure(\dirname(__DIR__))
         config([
             'localization.align' => false,
         ]);
-
-        // config([
-        //     'orbit.paths.content' => net_ease_cloud_music_path('content/'),
-        // ]);
 
         config([
             'exception-notify.environments' => ['production'],
@@ -314,14 +312,14 @@ return Application::configure(\dirname(__DIR__))
 
         Context::add(
             $application->runningInConsole()
-                ? ['Command' => null, 'In Schedule' => false]
+                ? ['Command' => SchedulingEvent::normalizeCommand((string) new ArgvInput), 'In Schedule' => false]
                 : [
                     'User Id' => request()->user()?->id,
-                    'URL' => request()->url(),
+                    'Url' => request()->url(),
                     'IP' => request()->ip(),
                     'Method' => request()->method(),
                     'Controller Action' => request()->route()?->getActionName(),
-                    // 'Command' => null,
+                    // 'Command' => SchedulingEvent::normalizeCommand((string) new ArgvInput),
                     // 'In Schedule' => false,
                     // 'Memory' => Number::fileSize(memory_get_peak_usage(true)),
                     // 'Duration' => blank(
