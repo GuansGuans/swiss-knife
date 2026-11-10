@@ -1,0 +1,17 @@
+app/Console/Commands/CheckServiceProviderCommand.php
+  h_f374ed0b3ee0f5 112
+  h_f374ed0b3ee0f5 50-53,55-58
+app/Console/Commands/NetEaseCloudMusicFreshCommand.php
+  h_f374ed0b3ee0f5 67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "cfcfd65afcc8a7e9aac5e3f34c61802b5962e1f5",
+  "prompts": {},
+  "humans": {
+    "h_f374ed0b3ee0f5": {
+      "author": "guanguans <ityaozm@gmail.com>"
+    }
+  }
+}
