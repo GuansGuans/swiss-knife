@@ -30,7 +30,6 @@ use Illuminate\Console\OutputStyle;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use SebastianBergmann\Timer\ResourceUsageFormatter;
@@ -420,10 +419,10 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
             return;
         }
 
-        // $currentBranch = Process::run('git branch --show-current')->throw()->output();
         $output = $this->output->isVeryVerbose()
             ? tap(new OutputStyle($this->input, clone $this->output->getOutput()))->setVerbosity(OutputInterface::VERBOSITY_DEBUG)
             : null;
+
         $this->output->isVeryVerbose() and $this->newLine();
         $currentBranch = $this->processHelperMustRun('git branch --show-current', output: $output)->getOutput();
 
@@ -431,21 +430,6 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
             return;
         }
 
-        // Process::run(implode(' && ', [
-        //     'git config user.name "guanguans"',
-        //     'git config user.email "ityaozm@gmail.com"',
-        //     'git pull --rebase --autostash',
-        //     \sprintf(
-        //         'git add --force %s',
-        //         $snapshots
-        //             ->pluck('screenshot_path')->map('net_ease_cloud_music_path')
-        //             ->push(NetEaseCloudMusicUserHomeSnapshot::orbitContentPath())
-        //             ->implode(' ')
-        //     ),
-        //     'git status',
-        //     'git commit --message "chore: update NetEase CloudMusic storage" --no-verify --signoff',
-        //     'git push',
-        // ]))->throw();
         $this->output->isVeryVerbose() and $this->newLine();
         $this->processHelperMustRun(implode(" &&\n", [
             'git config user.name "guanguans"',
@@ -476,6 +460,9 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
         }
     }
 
+    /**
+     * @noinspection PhpSameParameterValueInspection
+     */
     private function warnRetry(int $attempts, int $times): void
     {
         1 < $attempts and $this->components->warn(\sprintf(

@@ -64,7 +64,7 @@ final class NetEaseCloudMusicFreshCommand extends AbstractCommand
     protected function rules(): array
     {
         return [
-            'force' => 'sometimes|boolean',
+            'force' => 'sometimes|bool',
         ];
     }
 }
