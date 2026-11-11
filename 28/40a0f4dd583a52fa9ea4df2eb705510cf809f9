@@ -1,0 +1,29 @@
+app/Listeners/ContextSubscriber.php
+  h_f374ed0b3ee0f5 21,24,53-57,59,61-64
+  s_7fdc26e807522c::t_a49305355efa98 58
+  s_7fdc26e807522c::t_7ac1093c426638 60
+  h_f374ed0b3ee0f5 65
+bootstrap/app.php
+  h_f374ed0b3ee0f5 315-318
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "2840a0f4dd583a52fa9ea4df2eb705510cf809f9",
+  "prompts": {},
+  "humans": {
+    "h_f374ed0b3ee0f5": {
+      "author": "guanguans <ityaozm@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_7fdc26e807522c": {
+      "agent_id": {
+        "tool": "github-copilot-jetbrains",
+        "id": "1794398125653",
+        "model": "unknown"
+      },
+      "human_author": null
+    }
+  }
+}
