@@ -36,6 +36,7 @@ use Guanguans\Notify;
 use Illuminate\Console\Events\ScheduledTaskFailed;
 use Illuminate\Console\Scheduling\Event as SchedulingEvent;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Database\Connection;
@@ -276,12 +277,23 @@ return Application::configure(\dirname(__DIR__))
             }
         });
 
-        Artisan::whenCommandLifecycleIsLongerThan(CarbonInterval::seconds(3), static function (): void {});
         Event::subscribe(ContextSubscriber::class);
         Route::pattern('id', '[0-9]+');
         Route::patterns(['id' => '[0-9]+']);
         ServerDumper::register();
         NetEaseCloudMusicFreshCommand::prohibit($application->isProduction());
+        Artisan::whenCommandLifecycleIsLongerThan(
+            CarbonInterval::milliseconds(1000),
+            static function (): void {
+                Log::channel('daily')->warning('Command lifecycle is longer than 1000 milliseconds.');
+            }
+        );
+        resolve(Kernel::class)->whenRequestLifecycleIsLongerThan(
+            CarbonInterval::milliseconds(1000),
+            static function (): void {
+                Log::channel('daily')->warning('Request lifecycle is longer than 1000 milliseconds.');
+            }
+        );
     })
     ->booting(static function (): void {
         config(['session.secure' => true]);
@@ -312,19 +324,16 @@ return Application::configure(\dirname(__DIR__))
 
         Context::add(
             $application->runningInConsole()
-                ? ['Command' => SchedulingEvent::normalizeCommand((string) new ArgvInput), 'In Schedule' => false]
+                ? [
+                    'Command' => SchedulingEvent::normalizeCommand((string) new ArgvInput),
+                    'In Schedule' => false,
+                ]
                 : [
                     'User Id' => request()->user()?->id,
                     'Url' => request()->url(),
                     'IP' => request()->ip(),
                     'Method' => request()->method(),
                     'Controller Action' => request()->route()?->getActionName(),
-                    // 'Command' => SchedulingEvent::normalizeCommand((string) new ArgvInput),
-                    // 'In Schedule' => false,
-                    // 'Memory' => Number::fileSize(memory_get_peak_usage(true)),
-                    // 'Duration' => blank(
-                    //     $startTime = \defined('LARAVEL_START') ? LARAVEL_START : request()->server('REQUEST_TIME_FLOAT')
-                    // ) ? 'Unknown' : humans_milliseconds((microtime(true) - (float) $startTime) * 1000),
                 ]
         );
     })
