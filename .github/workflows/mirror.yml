@@ -23,4 +23,4 @@ jobs:
         with:
           target_repo_url: git@gitee.com:GuansGuans/swiss-knife.git
           ssh_private_key: ${{ secrets.GITEE_SSH_PRIVATE_KEY }}
-        timeout-minutes: 5
+        timeout-minutes: 1
