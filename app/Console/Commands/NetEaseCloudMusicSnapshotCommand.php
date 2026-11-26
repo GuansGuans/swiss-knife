@@ -224,6 +224,10 @@ final class NetEaseCloudMusicSnapshotCommand extends AbstractCommand
         \assert($responseWaiter instanceof ResponseWaiter);
         $responseWaiter->await();
         // $page->navigate(self::LOGIN_URL)->waitForNavigation();
+        // once(static function () use ($page): void {
+        //     $page->navigate(\sprintf(self::USER_HOME_URL_TEMPLATE, 1))->waitForNavigation();
+        //     // 检测是否登录成功，不成功则通知
+        // });
 
         return $page;
     }

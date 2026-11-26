@@ -71,6 +71,10 @@ final class NetEaseCloudMusicUserHomeSnapshot extends AbstractModel implements O
         $table->schemalessAttributes('extra_attributes');
     }
 
+    /**
+     * @see https://github.com/ryangjchandler/orbit
+     * @see https://github.com/spatie/sheets
+     */
     #[\Override]
     public function getOrbitDriver(): string
     {

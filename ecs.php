@@ -28,8 +28,7 @@ return ECSConfig::configure()
         // ],
     ])
     ->withSets([SetList::GUANGUANS])
-    ->withConfiguredRule(HeaderCommentFixer::class, Utils::configurationOfHeaderCommentFixer(
-        'GuansGuans/swiss-knife',
-        '2026',
-        __DIR__.'/LICENSE'
-    ));
+    ->withConfiguredRule(
+        HeaderCommentFixer::class,
+        Utils::configurationOfHeaderCommentFixer('GuansGuans/swiss-knife', '2026', __DIR__.'/LICENSE')
+    );

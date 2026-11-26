@@ -17,13 +17,13 @@ use App\Support\Rector\MixinStaticRector;
 use Ergebnis\Rector\Rules\Expressions\Arrays\SortAssociativeArrayByKeyRector;
 use Guanguans\PhpCsFixerCustomFixers\Support\Utils;
 use Guanguans\RectorRules\Rector\Array_\SortListItemOfSameScalarTypeRector;
-use Guanguans\RectorRules\Rector\File\AddNoinspectionDocblockToFileFirstStmtRector;
 use Guanguans\RectorRules\Rector\FunctionLike\RenameGarbageParamNameRector;
 use Guanguans\RectorRules\Rector\Name\RenameToConventionalCaseNameRector;
+use Guanguans\RectorRules\Rector\Scalar\ScalarValueToConstFetchRector;
 use Guanguans\RectorRules\Set\SetList;
+use Guanguans\RectorRules\Support\Utils as RectorRulesUtils;
 use Pest\Rector\Rules\ChainExpectCallsRector;
 use Pest\Rector\Set\PestSetList;
-use Rector\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector;
 use Rector\CodeQuality\Rector\LogicalAnd\LogicalToBooleanRector;
 use Rector\CodingStyle\Rector\ArrowFunction\ArrowFunctionDelegatingCallToFirstClassCallableRector;
 use Rector\CodingStyle\Rector\Assign\SplitDoubleAssignRector;
@@ -52,7 +52,7 @@ return RectorConfig::configure()
     ->withPaths([...Utils::defaultRootDirectories(), ...Utils::defaultRootFiles(), __DIR__.'/bootstrap/app.php'])
     ->withSkip(['*.blade.php', '*/Fixtures/*', __DIR__.'/app/Support/VarDumper/ServerDumper.php'])
     ->withSkip([
-        // Skip common rules.
+        /** @see SortListItemOfSameScalarTypeRector */
         ChainExpectCallsRector::class,
         LogicalToBooleanRector::class,
         NewlineBetweenClassLikeStmtsRector::class,
@@ -72,9 +72,6 @@ return RectorConfig::configure()
         ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [
             // __DIR__.'/app/Support/Mixin/',
         ],
-        // CompleteDynamicPropertiesRector::class => [
-        //     __DIR__.'/app/Support/Mixin/',
-        // ],
         RemoveDeadInstanceOfAssertRector::class => [
             __DIR__.'/bootstrap/app.php',
         ],
@@ -82,10 +79,12 @@ return RectorConfig::configure()
             __DIR__.'/app/Support/Mixin/SchedulingEventMixin.php',
         ],
         RemoveExtraParametersRector::class => [
-            __DIR__.'/app/Support/Mixin/',
+            __DIR__.'/app/Support/Mixin/CommandMixin.php',
+            __DIR__.'/app/Support/Mixin/SchedulingEventMixin.php',
         ],
         RenameGarbageParamNameRector::class => [
-            '*Abstract*.php',
+            __DIR__.'/app/Rules/AbstractProxyRule.php',
+            __DIR__.'/app/Rules/AbstractRule.php',
         ],
         RenameToConventionalCaseNameRector::class => [
             // __DIR__.'/app/Models/',
@@ -96,12 +95,14 @@ return RectorConfig::configure()
             __DIR__.'/config/',
         ],
         SortListItemOfSameScalarTypeRector::class => [
-            __DIR__.'/config/',
+            __DIR__.'/config/cache.php',
+            __DIR__.'/config/mail.php',
+            __DIR__.'/config/telescope.php',
             __DIR__.'/database/migrations/',
         ],
         StringClassNameToClassConstantRector::class => [
             __DIR__.'/bootstrap/app.php',
-            __DIR__.'/tests/Arch/',
+            __DIR__.'/tests/Arch/OtherTest.php',
         ],
         TypeHintTappableCallRector::class => [
             __DIR__.'/bootstrap/app.php',
@@ -150,34 +151,10 @@ return RectorConfig::configure()
         ClassHandleMethodRector::class,
         MixinStaticRector::class,
     ])
-    ->withConfiguredRule(AddNoinspectionDocblockToFileFirstStmtRector::class, [
-        '*/app/Support/Mixin/*' => [
-            'OverrideMissingInspection',
-        ],
-        '*/tests/*' => [
-            'AnonymousFunctionStaticInspection',
-            'NullPointerExceptionInspection',
-            'PhpPossiblePolymorphicInvocationInspection',
-            'PhpUndefinedClassInspection',
-            'PhpUnhandledExceptionInspection',
-            'PhpVoidFunctionResultUsedInspection',
-            'StaticClosureCanBeUsedInspection',
-        ],
-        '*/tests/Arch/*' => [
-            'ClassConstantCanBeUsedInspection',
-            'ClassnameLiteralInspection',
-        ],
-    ])
-    ->withConfiguredRule(RenameToConventionalCaseNameRector::class, [
-        'DB',
-        'Debug',
-        'MIT',
-        'PDO',
-        'URL',
-        'Value',
-        'afterEach',
-        'beforeEach',
-        'current_password',
-        'extra_attributes',
-        'new_password',
-    ]);
+    ->withConfiguredRule(
+        ScalarValueToConstFetchRector::class,
+        RectorRulesUtils::configurationOfScalarValueToConstFetchRector(null, [
+            Illuminate\Database\Eloquent\Model::class => ['CREATED_AT', 'UPDATED_AT'],
+            Symfony\Component\Console\Command\Command::class => ['FAILURE', 'INVALID', 'SUCCESS'],
+        ])
+    );
