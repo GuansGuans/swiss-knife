@@ -1,0 +1,35 @@
+composer.json
+  h_f374ed0b3ee0f5 19,36-40,55-56
+rector.dist.php
+  s_de56ee696ed00f::t_428631617345ac 85
+  s_de56ee696ed00f::t_765ccb75ae9800 89
+  h_f374ed0b3ee0f5 86,90,108
+  s_de56ee696ed00f::t_47a6d9a3ed72b0 101-103
+vendor-bin/common/composer.json
+  h_f374ed0b3ee0f5 4
+ecs.php
+  h_f374ed0b3ee0f5 31-34
+app/Console/Commands/NetEaseCloudMusicSnapshotCommand.php
+  h_f374ed0b3ee0f5 227-230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "19f925d2d616aa0b136392d73b2ad603070827b8",
+  "prompts": {},
+  "humans": {
+    "h_f374ed0b3ee0f5": {
+      "author": "guanguans <ityaozm@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_de56ee696ed00f": {
+      "agent_id": {
+        "tool": "github-copilot-jetbrains",
+        "id": "1795720546979",
+        "model": "unknown"
+      },
+      "human_author": null
+    }
+  }
+}
