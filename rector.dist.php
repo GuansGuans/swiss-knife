@@ -154,7 +154,7 @@ return RectorConfig::configure()
     ->withConfiguredRule(
         ScalarValueToConstFetchRector::class,
         RectorRulesUtils::configurationOfScalarValueToConstFetchRector(null, [
-            Illuminate\Database\Eloquent\Model::class => ['CREATED_AT', 'UPDATED_AT'],
-            Symfony\Component\Console\Command\Command::class => ['FAILURE', 'INVALID', 'SUCCESS'],
+            Illuminate\Database\Eloquent\Model::class,
+            Symfony\Component\Console\Command\Command::class,
         ])
     );
